@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KNGL RP | Los Santos Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body {
+            background-color: #0d0e12;
+            background-image: radial-gradient(circle at 50% 0%, #1f1235 0%, #0d0e12 70%);
+        }
+        .neon-border { box-shadow: 0 0 15px rgba(139, 92, 246, 0.15); }
+        .gallery-card img { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .gallery-card:hover img { transform: scale(1.05); }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen font-sans antialiased">
+
+    <div id="admin-badge" class="bg-purple-900 text-purple-200 text-center text-xs py-1 hidden font-semibold tracking-wider">
+        YÖNETİCİ MODU AKTİF • <button onclick="logout()" class="underline hover:text-white">Çıkış Yap</button>
+    </div>
+
+    <header class="border-b border-purple-900/40 bg-black/40 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-500 to-pink-500">
+                    KNGL RP
+                </span>
+                <span class="text-xs bg-purple-900/60 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full uppercase font-semibold tracking-widest">
+                    LOS SANTOS
+                </span>
+            </div>
+            <button id="action-btn" onclick="openAdminModal()" class="text-sm text-gray-400 hover:text-purple-400 transition-colors border border-gray-800 hover:border-purple-500/40 px-3 py-1.5 rounded-lg bg-gray-900/50">
+                Resim Yükle
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="text-center mb-16 animate__animated animate__fadeIn">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">Şehir Günlükleri & Galeri</h1>
+            <p class="text-gray-400 max-w-xl mx-auto text-sm">Los Santos sokaklarından en özel anlar ve unutulmaz anılar.</p>
+        </div>
+
+        <div id="loading" class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+        </div>
+
+        <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8 hidden animate__animated animate__fadeInUp"></div>
+
+        <div id="no-images" class="text-center py-20 hidden">
+            <p class="text-gray-500 text-lg">Henüz şehirden bir fotoğraf paylaşılmadı.</p>
+        </div>
+    </main>
+
+    <div id="image-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300 opacity-0" onclick="closeModal()">
+        <button class="absolute top-6 right-6 text-white text-3xl">&times;</button>
+        <div class="max-w-5xl w-full max-h-[85vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <img id="modal-img" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl border border-white/10">
+            <p id="modal-caption" class="text-gray-300 text-lg mt-4 font-medium tracking-wide"></p>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeAdminModal()">
+        <div class="max-w-md w-full bg-gray-950 border border-purple-950 p-8 rounded-2xl shadow-2xl animate__animated animate__zoomIn" onclick="event.stopPropagation()">
+            
+            <div id="login-section">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Yönetici Girişi</h2>
+                    <p class="text-gray-400 text-xs mt-1">Galeriye erişmek için şifreyi girin</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="password" id="admin-password" placeholder="Erişim Şifresi" class="w-full bg-gray-900 border border-gray-800 focus:border-purple-500 rounded-xl px-4 py-3 text-white focus:outline-none">
+                    <button onclick="checkPassword()" class="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 font-semibold text-white py-3 rounded-xl shadow-lg">Giriş Yap</button>
+                    <p id="login-error" class="text-red-500 text-xs text-center hidden">Hatalı şifre girdiniz!</p>
+                </div>
+            </div>
+
+            <div id="upload-section" class="hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white">Yeni Fotoğraf Ekle</h2>
+                    <p class="text-gray-400 text-xs mt-1">Discord veya Hızlıresim linkini yapıştırın</p>
+                </div>
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Resim URL Adresi</label>
+                        <input type="url" id="img-url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-800 focus:border-purple-500 rounded-xl px-4 py-3 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Açıklama / Başlık</label>
+                        <input type="text" id="img-caption" placeholder="Örn: Gece Devriyesi" class="w-full bg-gray-900 border border-gray-800 focus:border-purple-500 rounded-xl px-4 py-3 text-white focus:outline-none">
+                    </div>
+                    <button onclick="submitImage()" id="submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 font-semibold text-white py-3 rounded-xl shadow-lg">Galeriye Ekle</button>
+                    <p id="upload-status" class="text-center text-sm hidden"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 🛠️ AYARLAR: Şifreni buradan değiştir
+        const PASSPHRASE = "cesur1312"; 
+        
+        // Ücretsiz veri saklama alanı (KNGL topluluğuna özel benzersiz bir key)
+        const BIN_URL = "https://kvdb.io/MN94444455555566666/kngl_gallery_v2"; 
+
+        let localImages = [];
+
+        document.addEventListener("DOMContentLoaded", loadGallery);
+
+        // --- VERİ ÇEKME VE LİSTELEME ---
+        async function loadGallery() {
+            const loadingEl = document.getElementById('loading');
+            const galleryEl = document.getElementById('gallery');
+            const noImagesEl = document.getElementById('no-images');
+
+            try {
+                const res = await fetch(BIN_URL);
+                if (res.status === 404) {
+                    // Henüz veri oluşturulmamışsa boş başlat
+                    localImages = [];
+                } else {
+                    localImages = await res.json();
+                }
+
+                loadingEl.classList.add('hidden');
+
+                if (!localImages || localImages.length === 0) {
+                    noImagesEl.classList.remove('hidden');
+                    galleryEl.classList.add('hidden');
+                    return;
+                }
+
+                noImagesEl.classList.add('hidden');
+                galleryEl.innerHTML = '';
+                
+                localImages.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = "gallery-card bg-gray-950/40 border border-purple-950/60 rounded-xl overflow-hidden cursor-pointer neon-border hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 animate__animated animate__fadeIn";
+                    card.setAttribute('onclick', `openModal('${img.url}', '${img.caption || ""}')`);
+                    
+                    card.innerHTML = `
+                        <div class="aspect-video w-full overflow-hidden bg-gray-900 flex items-center justify-center">
+                            <img src="${img.url}" alt="KNGL" class="w-full h-full object-cover" loading="lazy">
+                        </div>
+                        ${img.caption ? `
+                            <div class="p-4 border-t border-purple-950/40 bg-black/20">
+                                <p class="text-sm text-gray-300 font-medium truncate">${img.caption}</p>
+                            </div>
+                        ` : ''}
+                    `;
+                    galleryEl.appendChild(card);
+                });
+
+                galleryEl.classList.remove('hidden');
+            } catch (error) {
+                loadingEl.innerHTML = `<p class="text-red-400 text-sm">Veriler çekilirken bir hata oluştu.</p>`;
+            }
+            
+            // Giriş yapılmışsa arayüzü güncelle
+            if(sessionStorage.getItem('kngl_logged') === 'true') {
+                showAdminInterface();
+            }
+        }
+
+        // --- ŞİFRE VE GİRİŞ KONTROLLERİ ---
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            if (sessionStorage.getItem('kngl_logged') === 'true') {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('upload-section').classList.remove('hidden');
+            } else {
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('upload-section').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('admin-password')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        function checkPassword() {
+            const input = document.getElementById('admin-password').value;
+            const error = document.getElementById('login-error');
+            if (input === PASSPHRASE) {
+                sessionStorage.setItem('kngl_logged', 'true');
+                error.classList.add('hidden');
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('upload-section').classList.remove('hidden');
+                showAdminInterface();
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        function showAdminInterface() {
+            document.getElementById('admin-badge').classList.remove('hidden');
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.innerText = "Fotoğraf Ekle";
+            actionBtn.classList.remove('text-gray-400', 'border-gray-800');
+            actionBtn.classList.add('text-purple-400', 'border-purple-500/40');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('kngl_logged');
+            location.reload();
+        }
+
+        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+        function openModal(url, caption) {
+            const modal = document.getElementById('image-modal');
+            document.getElementById('modal-img').src = url;
+            document.getElementById('modal-caption').innerText = caption;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+        function closeModal() {
+            const modal = document.getElementById('image-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // --- VERİ KAYDETME (RESİM EKLEME) ---
+        async function submitImage() {
+            const urlInput = document.getElementById('img-url');
+            const captionInput = document.getElementById('img-caption');
+            const btn = document.getElementById('submit-btn');
+            
+            const url = urlInput.value.trim();
+            const caption = captionInput.value.trim();
+
+            if (!url) return alert("Lütfen bir resim URL'si girin!");
+
+            btn.disabled = true;
+            btn.innerText = "Ekleniyor...";
+
+            // Yeni resmi listenin en başına ekle
+            const newImg = { url, caption, date: Date.now() };
+            localImages.unshift(newImg);
+
+            try {
+                // Veritabanı görevini gören servise güncel listeyi gönderiyoruz
+                const response = await fetch(BIN_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(localImages),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error("Kayıt başarısız.");
+
+                urlInput.value = '';
+                captionInput.value = '';
+                closeAdminModal();
+                loadGallery(); // Galeriyi yenile
+            } catch (error) {
+                alert("Hata oluştu, tekrar deneyin.");
+                localImages.shift(); // Hata olduysa ekleneni geri al
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Galeriye Ekle";
+            }
+        }
+    </script>
+</body>
+</html>
