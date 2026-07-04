@@ -155,6 +155,12 @@
         </div>
     </div>
 
+<div id="drop-zone" class="border-2 border-dashed border-purple-500/50 rounded-xl p-10 text-center cursor-pointer hover:bg-purple-900/20 transition-all mb-4">
+    <p class="text-gray-400 text-sm">Görselleri buraya sürükle veya <span class="text-purple-400 font-bold">tıkla</span></p>
+    <input type="file" id="img-file" accept="image/*" multiple class="hidden">
+</div>
+
+    
     <script>
         const PASSPHRASE = "nieves1312"; 
         
@@ -673,6 +679,37 @@ async function saveCaption() {
     }
 }
 
+
+// --- SÜRÜKLE BIRAK MANTIĞI ---
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('img-file');
+
+// 1. Tıklayınca dosya seçiciyi aç
+dropZone.addEventListener('click', () => fileInput.click());
+
+// 2. Üzerine dosya getirildiğinde efekt ver
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-purple-300', 'bg-purple-900/20');
+});
+
+// 3. Dosyayı dışarı çıkarınca efekti sil
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-purple-300', 'bg-purple-900/20');
+});
+
+// 4. Dosyayı bıraktığında yakala ve input'a ata
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-purple-300', 'bg-purple-900/20');
+    
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        alert(e.dataTransfer.files.length + " adet görsel seçildi. Şimdi 'Yüklemeyi Başlat' butonuna basabilirsin.");
+    }
+});
+
+        
     </script>
 </body>
 </html>
