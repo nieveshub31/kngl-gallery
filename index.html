@@ -84,6 +84,24 @@
             }
         }
     </style>
+
+<div class="max-w-md mx-auto my-10 p-6 bg-[#0d0e12] border border-purple-900/50 rounded-2xl shadow-2xl">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-white font-bold text-xl">KNGL RP Durumu</h2>
+            <p id="server-status" class="text-gray-400 text-sm">Sunucu verileri yükleniyor...</p>
+        </div>
+        <div class="text-right">
+            <p class="text-gray-400 text-xs uppercase font-bold">Aktiflik</p>
+            <span id="player-count" class="text-purple-500 font-black text-2xl">--</span>
+        </div>
+    </div>
+    <div class="mt-4 w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+        <div id="player-bar" class="h-full bg-purple-600 transition-all duration-1000" style="width: 0%"></div>
+    </div>
+</div>
+
+    
 </head>
 <body class="text-gray-100 min-h-screen font-sans antialiased">
 
@@ -810,6 +828,38 @@ window.addEventListener('load', () => {
     }, 2000); // 2.5 saniye göster
 });
 
+async function checkServerStatus() {
+    const serverId = "x5oy4vxd"; // FiveM server ID'ni buraya yaz
+    const statusEl = document.getElementById('server-status');
+    const countEl = document.getElementById('player-count');
+    const barEl = document.getElementById('player-bar');
+
+    try {
+        const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${serverId}`);
+        const data = await res.json();
+        
+        const players = data.Data.players.length;
+        const max = data.Data.sv_maxclients;
+        
+        statusEl.innerText = "Sunucu Aktif (Online)";
+        statusEl.classList.replace('text-gray-400', 'text-green-500');
+        countEl.innerText = `${players} / ${max}`;
+        barEl.style.width = `${(players / max) * 100}%`;
+        
+    } catch (e) {
+        statusEl.innerText = "Sunucu Bakımda (Offline)";
+        statusEl.classList.replace('text-gray-400', 'text-red-500');
+        countEl.innerText = "0";
+        barEl.style.width = "0%";
+    }
+}
+
+// Site açılır açılmaz çalıştır
+checkServerStatus();
+// 1 dakikada bir güncelle
+setInterval(checkServerStatus, 60000);
+
+        
     </script>
 </body>
 </html>
