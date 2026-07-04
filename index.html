@@ -827,14 +827,19 @@ window.addEventListener('load', () => {
         }, 800); 
     }, 2000); // 2.5 saniye göster
 });
+// Sayfa yüklendiğinde bir kez çalıştır
+checkServerStatus();
+
+// Her 10 saniyede bir (10000 ms) yenile
+setInterval(checkServerStatus, 10000);
 
 async function checkServerStatus() {
-    const serverId = "5oy4vxd"; // FiveM server ID'ni buraya yaz
+    const serverId = "5oy4vxd"; // FiveM ID'n
     const statusEl = document.getElementById('server-status');
     const countEl = document.getElementById('player-count');
     const barEl = document.getElementById('player-bar');
 
-    // CORS engeli için 'https://corsproxy.io/?' ön ekini ekliyoruz
+    // Proxy kullanarak CORS engelini aş
     const proxyUrl = "https://corsproxy.io/?";
     const targetUrl = `https://servers-frontend.fivem.net/api/servers/single/${serverId}`;
 
@@ -842,22 +847,19 @@ async function checkServerStatus() {
         const res = await fetch(proxyUrl + encodeURIComponent(targetUrl));
         const data = await res.json();
         
-        // Veri yapısını kontrol et
         const players = data.Data.players.length;
         const max = data.Data.sv_maxclients;
         
+        // Başarılı durumu güncelle
         statusEl.innerText = "Sunucu Aktif (Online)";
-        statusEl.classList.replace('text-gray-400', 'text-green-500');
+        statusEl.className = "text-green-500 text-sm";
         countEl.innerText = `${players} / ${max}`;
-        
-        // Çubuğu güncelle
-        const percent = (players / max) * 100;
-        barEl.style.width = `${percent}%`;
+        barEl.style.width = `${(players / max) * 100}%`;
         
     } catch (e) {
-        console.error("Hata:", e);
+        // Hata durumunda (Offline)
         statusEl.innerText = "Sunucu Bakımda (Offline)";
-        statusEl.classList.replace('text-gray-400', 'text-red-500');
+        statusEl.className = "text-red-500 text-sm";
         countEl.innerText = "0";
         barEl.style.width = "0%";
     }
