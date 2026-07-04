@@ -109,26 +109,17 @@
     </div>
 </div>
     
-   <div id="admin-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-gray-900 border border-purple-900/50 p-6 rounded-2xl w-full max-w-md">
-        <h2 class="text-xl font-bold text-white mb-4">Fotoğraf Yükle</h2>
-        
-        <div id="drop-zone" class="border-2 border-dashed border-purple-500/50 rounded-xl p-8 text-center cursor-pointer hover:bg-purple-900/20 transition-all mb-4">
-            <p class="text-gray-400 text-sm">Görselleri sürükle veya <span class="text-purple-400 font-bold underline">tıkla</span></p>
-            <input type="file" id="img-file" accept="image/*" multiple class="hidden">
-        </div>
+    <div id="admin-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeAdminModal()">
+        <div class="max-w-md w-full bg-gray-950 border border-purple-950 p-8 rounded-2xl shadow-2xl" onclick="event.stopPropagation()">
 
-        <div id="preview-container" class="grid grid-cols-3 gap-2 mb-4"></div>
 
-        <input type="text" id="img-caption" placeholder="Açıklama..." class="w-full bg-black/50 border border-purple-900/50 rounded-xl px-4 py-3 text-white mb-4">
-        
-        <div class="flex gap-2">
-            <button onclick="closeAdminModal()" class="flex-1 bg-gray-800 py-3 rounded-xl">Kapat</button>
-            <button onclick="submitBatchImages()" class="flex-1 bg-purple-600 py-3 rounded-xl font-bold">Yükle</button>
-        </div>
-    </div>
+<div id="drop-zone" class="border-2 border-dashed border-purple-500/50 rounded-xl p-8 text-center cursor-pointer hover:bg-purple-900/20 transition-all mb-4">
+    <p class="text-gray-400 text-sm">Görselleri buraya sürükle veya <span class="text-purple-400 font-bold underline">buraya tıkla</span></p>
+    
+    <input type="file" id="img-file" accept="image/*" multiple class="hidden">
 </div>
-            
+            <div id="preview-container" class="grid grid-cols-3 gap-2 mt-4 mb-4">
+    </div>
             <div id="login-section">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-white">Yönetici Girişi</h2>
@@ -139,14 +130,6 @@
                     <p id="login-error" class="text-red-500 text-xs text-center hidden">Hatalı şifre girdiniz!</p>
                 </div>
             </div>
-
-            <div id="drop-zone" class="border-2 border-dashed border-purple-500/50 rounded-xl p-8 text-center cursor-pointer hover:bg-purple-900/20 transition-all mb-4">
-    <p class="text-gray-400 text-sm">Görselleri buraya sürükle veya <span class="text-purple-400 font-bold underline">buraya tıkla</span></p>
-    
-    <input type="file" id="img-file" accept="image/*" multiple class="hidden">
-</div>
-            <div id="preview-container" class="grid grid-cols-3 gap-2 mt-4 mb-4">
-    </div>
 
             <div id="upload-section" class="hidden">
                 <div class="mb-6">
@@ -716,30 +699,12 @@ dropZone.addEventListener('dragleave', () => {
 dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('border-purple-300', 'bg-purple-900/20');
-    
-    const files = e.dataTransfer.files;
-    if (files.length) {
-        fileInput.files = files; // Dosyaları input'a ata
-        showPreviews(files);    // Önizlemeleri göster
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        alert(e.dataTransfer.files.length + " adet dosya seçildi.");
     }
 });
 
-// Önizleme Fonksiyonu
-function showPreviews(files) {
-    const previewContainer = document.getElementById('preview-container');
-    previewContainer.innerHTML = ''; // Öncekileri temizle
-
-    Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const div = document.createElement('div');
-            div.className = "aspect-square rounded-lg overflow-hidden border border-purple-500/30";
-            div.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
-            previewContainer.appendChild(div);
-        }
-        reader.readAsDataURL(file);
-    });
-}
 // --- GİRİŞ YAPILDIĞINDA EKRANI DEĞİŞTİRME ---
 // Mevcut checkAdmin fonksiyonunun içine şu iki satırı ekle:
 function checkAdmin() {
@@ -749,53 +714,6 @@ function checkAdmin() {
         document.getElementById('upload-section').classList.remove('hidden');
         sessionStorage.setItem('kngl_logged', 'true');
     }
-}
-
-
-let selectedFiles = [];
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('img-file');
-const previewContainer = document.getElementById('preview-container');
-
-// Tıklama tetikleyici
-dropZone.onclick = () => fileInput.click();
-
-// Sürükle-Bırak Olayları
-dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('border-purple-300'); };
-dropZone.ondragleave = () => dropZone.classList.remove('border-purple-300');
-dropZone.ondrop = (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-purple-300');
-    handleFiles(e.dataTransfer.files);
-};
-
-fileInput.onchange = (e) => handleFiles(e.target.files);
-
-function handleFiles(files) {
-    selectedFiles = [...selectedFiles, ...Array.from(files)];
-    renderPreviews();
-}
-
-function renderPreviews() {
-    previewContainer.innerHTML = '';
-    selectedFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const div = document.createElement('div');
-            div.className = "relative aspect-square rounded-lg overflow-hidden border border-purple-500/30";
-            div.innerHTML = `
-                <img src="${e.target.result}" class="w-full h-full object-cover">
-                <button onclick="removeFile(${index})" class="absolute top-0 right-0 bg-red-600 text-white text-[10px] w-5 h-5">X</button>
-            `;
-            previewContainer.appendChild(div);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-function removeFile(index) {
-    selectedFiles.splice(index, 1);
-    renderPreviews();
 }
 
         
