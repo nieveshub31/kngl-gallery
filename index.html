@@ -156,38 +156,6 @@
     </div>
 
     <script>
-
-
-// Arama ve Sıralama Fonksiyonu
-function filterGallery() {
-    const searchTerm = document.getElementById('search-input').value.toLowerCase();
-    const sortValue = document.getElementById('sort-select').value;
-
-    let filtered = [...allImages];
-
-    // 1. Arama Filtresi
-    filtered = filtered.filter(img => 
-        (img.caption || "").toLowerCase().includes(searchTerm)
-    );
-
-    // 2. Sıralama
-    if (sortValue === 'newest') {
-        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else {
-        filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    }
-
-    // Filtrelenmiş veriyi sayfaya yansıt
-    renderFilteredPage(filtered);
-}
-
-// Filtrelenmiş veriyi çizen özel fonksiyon
-function renderFilteredPage(data) {
-    // Mevcut tüm mantığı buraya taşıyoruz (allImages yerine data kullanıyoruz)
-    // Sadece `renderPage` içerisindeki `allImages.slice(...)` kısmını `data.slice(...)` yapman yeterli.
-    // İstersen mevcut renderPage'i güncellemek yerine renderFilteredPage'i kullanabiliriz.
-}
-        
         const PASSPHRASE = "nieves1312"; 
         
         // 🔑 ANAHTARLARINI BURAYA YENİDEN YAZ:
