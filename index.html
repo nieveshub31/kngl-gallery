@@ -9,6 +9,30 @@
    <style>
 
 <style>
+
+<div id="server-panel" class="bg-gray-900/80 border border-purple-500/30 rounded-2xl p-6 w-full max-w-sm mx-auto shadow-[0_0_30px_-10px_rgba(168,85,247,0.3)] backdrop-blur-md">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-white font-bold text-lg">KNGL RP</h3>
+        <div id="status-badge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gray-800 text-gray-400">
+            Yükleniyor...
+        </div>
+    </div>
+    
+    <div class="space-y-3">
+        <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Sunucu Durumu:</span>
+            <span id="server-status" class="text-white">Kontrol ediliyor</span>
+        </div>
+        <div class="flex justify-between text-sm">
+            <span class="text-gray-400">Aktif Oyuncu:</span>
+            <span id="player-count" class="text-white font-bold">-- / --</span>
+        </div>
+        <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden mt-2">
+            <div id="player-bar" class="bg-purple-600 h-full w-0 transition-all duration-1000"></div>
+        </div>
+    </div>
+</div>
+       
     /* 1. Tüm sayfa yapısını kilitle ve scrollbar alanını sıfırla */
     html, body {
         margin: 0;
@@ -809,6 +833,42 @@ window.addEventListener('load', () => {
         }, 800); 
     }, 2500); // 2.5 saniye göster
 });
+
+
+async function updateServerStatus() {
+    const serverId = "5oy4vxd"; // FiveM server ID'ni buraya yaz
+    const statusEl = document.getElementById('server-status');
+    const badgeEl = document.getElementById('status-badge');
+    const playerEl = document.getElementById('player-count');
+    const barEl = document.getElementById('player-bar');
+
+    try {
+        const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${serverId}`);
+        const data = await res.json();
+        
+        const count = data.Data.players.length;
+        const max = data.Data.sv_maxclients;
+        const percent = (count / max) * 100;
+
+        // Bilgileri güncelle
+        statusEl.innerText = "ONLINE";
+        badgeEl.innerText = "Aktif";
+        badgeEl.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-green-500/20 text-green-500";
+        playerEl.innerText = `${count} / ${max}`;
+        barEl.style.width = `${percent}%`;
+    } catch (e) {
+        statusEl.innerText = "OFFLINE";
+        badgeEl.innerText = "Kapalı";
+        badgeEl.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-500/20 text-red-500";
+        playerEl.innerText = "0 / 0";
+        barEl.style.width = "0%";
+    }
+}
+
+// İlk çalıştır ve her 60 saniyede bir güncelle
+updateServerStatus();
+setInterval(updateServerStatus, 60000);
+
         
     </script>
 </body>
