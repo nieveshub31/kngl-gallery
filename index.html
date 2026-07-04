@@ -679,42 +679,9 @@ async function saveCaption() {
     }
 }
 
-      // --- SÜRÜKLE BIRAK MANTIĞI ---
+        // --- SÜRÜKLE BIRAK MANTIĞI ---
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('img-file');
-
-dropZone.onclick = () => fileInput.click();
-dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('border-purple-300'); };
-dropZone.ondragleave = () => dropZone.classList.remove('border-purple-300');
-dropZone.ondrop = (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-purple-300');
-    fileInput.files = e.dataTransfer.files; // Dosyaları aktar
-    alert("Dosya eklendi!");
-};
-
-// --- YÜKLEME BUTONU ---
-async function submitContent() {
-    const caption = document.getElementById('img-caption').value;
-    const directUrl = document.getElementById('img-url').value;
-    const files = fileInput.files;
-
-    if (directUrl) {
-        // Link olarak ekleme işlemi
-        await saveToSupabase(directUrl, caption);
-    } else if (files.length > 0) {
-        // Dosya olarak ekleme işlemi (Önce ImgBB, sonra Supabase)
-        await uploadFilesAndSave(files, caption);
-    }
-}
-
-// --- GİRİŞ KONTROLÜ ---
-function checkAdmin() {
-    if (document.getElementById('admin-pass').value === "SIFREN") {
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('upload-section').classList.remove('hidden');
-    }
-}
 
 dropZone.addEventListener('click', () => fileInput.click());
 
