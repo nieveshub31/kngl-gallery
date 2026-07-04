@@ -114,10 +114,12 @@
     <script>
         const PASSPHRASE = "KNGL123"; 
         
-        // 🔑 1. ADIMDA ALDIĞIN KENDİ API ANAHTARINI AŞAĞIDAKİ TIRNAKLARIN İÇİNE YAPIŞTIR!
-        const IMGBB_KEY = "31355528081f87941242bc8c1a4a433d";
+        // 🛠️ SUPABASE AYARLARIN (2. Adımda aldığın bilgileri buraya gir)
+        const SUPABASE_URL = "https://mmkusfynqosmvpsbwewc.supabase.co/rest/v1/"; 
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ta3VzZnlucW9zbXZwc2J3ZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNzg0MzEsImV4cCI6MjA5ODc1NDQzMX0.pPtgFT_JdQaVqftGWTQxTUnulQ8WUNvrbdy5AG4jy-4"; 
         
-        const BIN_URL = "https://api.jsonbin.io/v3/b/663d2bafe41b4d34e4f1659f";
+        // 🛠️ IMGBB AYARIN (Kendine ait güncel API anahtarın)
+        const IMGBB_KEY = "31355528081f87941242bc8c1a4a433d";
 
         let localImages = [];
         let activeMethod = 'file';
@@ -131,13 +133,16 @@
             const isAdmin = sessionStorage.getItem('kngl_logged') === 'true';
 
             try {
-                const res = await fetch(`${BIN_URL}/latest`, {
-                    headers: { "X-Master-Key": "$2a$10$WpMhK7P8lU1hKzS3GOnYkeZ6P7.tFpBqJ7aKxXFz1p6D1yvH5pS1i" }
+                // Verileri Supabase üzerinden tarihe göre ters sıralı çekiyoruz (En yeni en üstte)
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/gallery?select=*&order=created_at.desc`, {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
                 });
                 
                 if (res.ok) {
-                    const data = await res.json();
-                    localImages = data.record.images || [];
+                    localImages = await res.json();
                 } else {
                     localImages = [];
                 }
@@ -153,7 +158,7 @@
                 noImagesEl.classList.add('hidden');
                 galleryEl.innerHTML = '';
                 
-                localImages.forEach((img, index) => {
+                localImages.forEach((img) => {
                     if(!img || !img.url) return;
                     const card = document.createElement('div');
                     card.className = "gallery-card relative bg-gray-950/40 border border-purple-950/60 rounded-xl overflow-hidden cursor-pointer neon-border hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1 animate__animated animate__fadeIn";
@@ -166,7 +171,7 @@
                     
                     card.innerHTML = `
                         ${isAdmin ? `
-                            <button data-index="${index}" class="delete-btn absolute top-3 right-3 z-10 bg-red-600/90 hover:bg-red-700 text-white p-2 rounded-lg backdrop-blur-sm transition-all border border-red-500 shadow-lg" title="Bu Görseli Sil">
+                            <button data-id="${img.id}" class="delete-btn absolute top-3 right-3 z-10 bg-red-600/90 hover:bg-red-700 text-white p-2 rounded-lg backdrop-blur-sm transition-all border border-red-500 shadow-lg" title="Bu Görseli Sil">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -189,8 +194,8 @@
                     document.querySelectorAll('.delete-btn').forEach(button => {
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            const idx = parseInt(button.getAttribute('data-index'));
-                            deleteImage(idx);
+                            const id = button.getAttribute('data-id');
+                            deleteImage(id);
                         });
                     });
                 }
@@ -198,7 +203,7 @@
                 galleryEl.classList.remove('hidden');
             } catch (error) {
                 console.error(error);
-                loadingEl.innerHTML = `<p class="text-red-400 text-sm p-4 bg-red-950/20 border border-red-900/50 rounded-xl">Galeri yüklenirken bir senkronizasyon sorunu oluştu.</p>`;
+                loadingEl.innerHTML = `<p class="text-red-400 text-sm p-4 bg-red-950/20 border border-red-900/50 rounded-xl">Veritabanı bağlantı sorunu oluştu.</p>`;
             }
             
             if(isAdmin) {
@@ -206,25 +211,21 @@
             }
         }
 
-        async function deleteImage(index) {
+        async function deleteImage(id) {
             if (!confirm("Bu fotoğrafı galeriden kalıcı olarak silmek istediğinize emin misiniz?")) return;
             
             try {
-                localImages.splice(index, 1);
-                
-                await fetch(BIN_URL, {
-                    method: 'PUT',
+                await fetch(`${SUPABASE_URL}/rest/v1/gallery?id=eq.${id}`, {
+                    method: 'DELETE',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': "$2a$10$WpMhK7P8lU1hKzS3GOnYkeZ6P7.tFpBqJ7aKxXFz1p6D1yvH5pS1i"
-                    },
-                    body: JSON.stringify({ images: localImages })
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
                 });
-
                 loadGallery();
             } catch (error) {
                 console.error(error);
-                alert("Silme işlemi bulut senkronizasyonu nedeniyle başarısız oldu.");
+                alert("Silme işlemi başarısız oldu.");
             }
         }
 
@@ -346,17 +347,19 @@
 
                 if (!finalUrl) throw new Error("URL oluşturulamadı.");
 
-                const newImg = { url: finalUrl, caption: caption, date: Date.now() };
-                localImages.unshift(newImg);
-                
-                await fetch(BIN_URL, {
-                    method: 'PUT',
+                // Supabase veritabanına doğrudan güvenli kayıt yapıyoruz
+                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/gallery`, {
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': "$2a$10$WpMhK7P8lU1hKzS3GOnYkeZ6P7.tFpBqJ7aKxXFz1p6D1yvH5pS1i"
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal"
                     },
-                    body: JSON.stringify({ images: localImages })
+                    body: JSON.stringify({ url: finalUrl, caption: caption })
                 });
+
+                if(!dbRes.ok) throw new Error("Veritabanına yazma hatası.");
 
                 fileInput.value = '';
                 urlInput.value = '';
@@ -367,7 +370,7 @@
 
             } catch (error) {
                 console.error(error);
-                alert("Yükleme başarısız oldu. Lütfen koddaki IMGBB_KEY alanına kendi anahtarınızı doğru girdiğinizden emin olun.");
+                alert("Yükleme işlemi başarısız. API anahtarlarınızı veya Supabase ayarlarını kontrol edin.");
             } finally {
                 resetButton();
             }
