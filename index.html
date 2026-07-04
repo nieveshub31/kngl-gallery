@@ -294,18 +294,39 @@
                 bulkBtn.classList.add('hidden');
             }
         }
+// 🗑️ Toplu Silme Butonunun Durumunu Güncelleme (Hata Korumalı)
+        function updateBulkDeleteButton() {
+            const bulkBtn = document.getElementById('bulk-delete-btn');
+            const countEl = document.getElementById('select-count');
+            
+            if (bulkBtn) {
+                if (selectedImageIds.length > 0) {
+                    bulkBtn.classList.remove('hidden');
+                } else {
+                    bulkBtn.classList.add('hidden');
+                }
+                
+                // Eğer butonun içindeki sayaç elementi bulunduysa sayıyı yaz, yoksa direkt butona yaz
+                if (countEl) {
+                    countEl.innerText = selectedImageIds.length;
+                } else {
+                    bulkBtn.innerText = `Seçilenleri Sil (${selectedImageIds.length})`;
+                }
+            }
+        }
 
-       // 🛑 Toplu Silme İşlemini Çalıştıran Fonksiyon (Güvenli ve Paralel Versiyon)
+        // 🛑 Toplu Silme İşlemini Çalıştıran Fonksiyon (Güvenli ve Paralel Versiyon)
         async function executeBulkDelete() {
             if (selectedImageIds.length === 0) return;
             if (!confirm(`Seçtiğiniz ${selectedImageIds.length} adet fotoğrafı kalıcı olarak silmek istiyor musunuz?`)) return;
 
             const bulkBtn = document.getElementById('bulk-delete-btn');
-            bulkBtn.disabled = true;
-            bulkBtn.innerText = "Siliniyor...";
+            if (bulkBtn) {
+                bulkBtn.disabled = true;
+                bulkBtn.innerText = "Siliniyor...";
+            }
 
             try {
-                // Seçilen tüm ID'ler için çalışan tekli silme isteklerini hazırlayıp paralel (aynı anda) gönderiyoruz
                 const deletePromises = selectedImageIds.map(id => 
                     fetch(`${SUPABASE_URL}/rest/v1/gallery?id=eq.${id}`, {
                         method: 'DELETE',
@@ -316,14 +337,10 @@
                     })
                 );
 
-                // Tüm silme isteklerinin tamamlanmasını bekliyoruz
                 const responses = await Promise.all(deletePromises);
-                
-                // Hepsinin başarıyla silindiğinden emin oluyoruz
                 const allOk = responses.every(res => res.ok);
 
                 if (allOk) {
-                    // Yerel diziden silinen görselleri temizliyoruz
                     allImages = allImages.filter(img => !selectedImageIds.includes(img.id.toString()));
                     selectedImageIds = [];
                     updateBulkDeleteButton();
@@ -341,8 +358,12 @@
                 console.error("Toplu silme hatası:", error);
                 alert("Bağlantı hatası: " + error.message);
             } finally {
-                bulkBtn.disabled = false;
-                bulkBtn.innerHTML = `Seçilenleri Sil (<span id="select-count">0</span>)`;
+                // Hata veren kısım burasıydı, artık elementin varlığı kontrol ediliyor
+                const finalBulkBtn = document.getElementById('bulk-delete-btn');
+                if (finalBulkBtn) {
+                    finalBulkBtn.disabled = false;
+                    finalBulkBtn.innerHTML = `Seçilenleri Sil (<span id="select-count">${selectedImageIds.length}</span>)`;
+                }
             }
         }
 
