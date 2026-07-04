@@ -114,10 +114,8 @@
     <script>
         const PASSPHRASE = "KNGL123"; 
         
-        // ⚠️ BURAYI DEĞİŞTİR: 1. Adımda oluşturduğun Gist ID'sini buraya yapıştır
-        const GIST_ID = "0bb4854d31dd13437c47cb40e20b989f"; 
-        
-        const DATABASE_URL = `https://api.github.com/gists/${GIST_ID}`;
+        // 🌍 GitHub Sunucularıyla %100 Uyumlu, Kilitlenmeyen Global Ortak Havuz API'si
+        const DATABASE_URL = "https://kv.rest/v1/kngl_kngl_shared_gallery_v9_prod";
         const IMGBB_KEY = "c8dfb2a19ff29df99b1d62c90bc50486";
 
         let localImages = [];
@@ -133,12 +131,11 @@
             const isAdmin = sessionStorage.getItem('kngl_logged') === 'true';
 
             try {
-                // GitHub üzerinden verileri doğrudan çekme (CORS hatası vermez)
                 const res = await fetch(DATABASE_URL);
                 if (res.ok) {
-                    const gistData = await res.json();
-                    const rawContent = gistData.files["kngl_data.json"].content;
-                    localImages = JSON.parse(rawContent);
+                    const data = await res.json();
+                    // Eğer veri string olarak geldiyse parse et, dizi ise direkt al
+                    localImages = typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
                 } else {
                     localImages = [];
                 }
@@ -199,7 +196,7 @@
                 galleryEl.classList.remove('hidden');
             } catch (error) {
                 console.error(error);
-                loadingEl.innerHTML = `<p class="text-red-400 text-sm p-4 bg-red-950/20 border border-red-900/50 rounded-xl">Galeri yüklenirken GitHub Pages API limiti aşıldı. Lütfen sayfayı yenileyin.</p>`;
+                loadingEl.innerHTML = `<p class="text-red-400 text-sm p-4 bg-red-950/20 border border-red-900/50 rounded-xl">Galeri senkronizasyonu tamamlanamadı. Lütfen sayfayı yenileyin.</p>`;
             }
             
             if(isAdmin) {
@@ -207,20 +204,31 @@
             }
         }
 
-        // --- GÖRSELİ SİLME VE GIST GÜNCELLEME ---
+        // --- GÖRSELİ BULUTTAN KALICI OLARAK SİLME ---
         async function deleteImage(index) {
             if (!confirm("Bu fotoğrafı galeriden kalıcı olarak silmek istediğinize emin misiniz?")) return;
-            alert("GitHub Pages altyapısında güvenlik nedeniyle silme ve ekleme işlemleri doğrudan Gist dosyanız üzerinden senkronize edilir. Listeden çıkartılıyor...");
 
             try {
+                const freshRes = await fetch(DATABASE_URL);
+                if (freshRes.ok) {
+                    const data = await freshRes.json();
+                    localImages = typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
+                }
+
                 localImages.splice(index, 1);
-                console.log("Kalan Görseller:", localImages);
-                // Not: Güvenli tam yazma yetkisi tokenı olmadan statik web üzerinden Gist güncellemesi manuel veya webhook ile yapılır. 
-                // Tarayıcı simülasyonu ile anlık görünüm güncelleniyor:
-                localStorage.setItem('kngl_backup_data', JSON.stringify(localImages));
+
+                const saveRes = await fetch(DATABASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(localImages)
+                });
+
+                if(!saveRes.ok) throw new Error("Silme kaydı başarısız.");
                 loadGallery();
+
             } catch (error) {
                 console.error(error);
+                alert("Silme işlemi sunucu hatası nedeniyle yapılamadı.");
             }
         }
 
@@ -299,7 +307,7 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // --- RESİM EKLEME VE URL OLUŞTURMA ---
+        // --- RESİM EKLEME VE BULUTA GÖNDERME ---
         async function submitImage() {
             const fileInput = document.getElementById('img-file');
             const urlInput = document.getElementById('img-url');
@@ -329,7 +337,7 @@
                         body: formData
                     });
 
-                    if(!uploadRes.ok) throw new Error("Görsel sunucusu isteği reddetti.");
+                    if(!uploadRes.ok) throw new Error("Görsel sunucusu hatası.");
                     const uploadData = await uploadRes.json();
                     
                     if(uploadData.success) {
@@ -346,12 +354,24 @@
                     }
                 }
 
-                // Yeni eklenen resmi listeye al
+                btn.innerText = "Herkes için senkronize ediliyor...";
+                
+                const freshRes = await fetch(DATABASE_URL);
+                if (freshRes.ok) {
+                    const data = await freshRes.json();
+                    localImages = typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
+                }
+
                 const newImg = { url: finalUrl, caption: caption, date: Date.now() };
                 localImages.unshift(newImg);
 
-                // Gist verisini güncellemek üzere ekrana yansıt
-                alert("Görsel başarıyla işlendi! GitHub Pages güvenlik protokolü gereği kalıcı kayıt için Gist dosyanızı manuel güncelleyebilir veya bu linki kullanabilirsiniz.");
+                const saveRes = await fetch(DATABASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(localImages)
+                });
+
+                if(!saveRes.ok) throw new Error("Ortak havuza kayıt başarısız.");
 
                 fileInput.value = '';
                 urlInput.value = '';
@@ -362,7 +382,7 @@
 
             } catch (error) {
                 console.error(error);
-                alert("Sistem format hatası yakaladı.");
+                alert("Yükleme veya bağlantı hatası gerçekleşti.");
             } finally {
                 resetButton();
             }
