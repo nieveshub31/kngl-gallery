@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KNGL RP | Gallery</title>
+    <title>KNGL RP | Los Santos Gallery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
@@ -32,11 +32,6 @@
 </head>
 <body class="text-gray-100 min-h-screen font-sans antialiased">
 
-    <!-- HTML içindeki galeri div'i -->
-<div id="gallery-container" class="grid grid-cols-4 gap-4 items-start"> 
-    <!-- items-start eklendi, artık kartlar birbirine göre esnemeyecek -->
-</div>
-
     <div id="admin-badge" class="bg-purple-900 text-purple-200 text-center text-xs py-1 hidden font-semibold tracking-wider">
         YÖNETİCİ MODU AKTİF • <button onclick="logout()" class="underline hover:text-white">Çıkış Yap</button>
     </div>
@@ -48,7 +43,7 @@
                     KNGL RP
                 </span>
                 <span class="text-xs bg-purple-900/60 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded-full uppercase font-semibold tracking-widest">
-                    GALLERY
+                    LOS SANTOS
                 </span>
             </div>
             
@@ -102,7 +97,7 @@
         </div>
     </main>
 
-   <div id="image-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal()">
+    <div id="image-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal()">
     <button class="absolute top-6 right-6 text-white text-3xl">&times;</button>
     <div class="max-w-5xl w-full max-h-[85vh] flex flex-col items-center" onclick="event.stopPropagation()">
         <img id="modal-img" src="" class="max-w-full max-h-[65vh] object-contain rounded-lg shadow-2xl">
@@ -113,7 +108,7 @@
         </div>
     </div>
 </div>
-
+    
     <div id="admin-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeAdminModal()">
         <div class="max-w-md w-full bg-gray-950 border border-purple-950 p-8 rounded-2xl shadow-2xl" onclick="event.stopPropagation()">
             
@@ -164,9 +159,9 @@
         const PASSPHRASE = "nieves1312"; 
         
         // 🔑 ANAHTARLARINI BURAYA YENİDEN YAZ:
-        const SUPABASE_URL = "https://mmkusfynqosmvpsbwewc.supabase.co"; 
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ta3VzZnlucW9zbXZwc2J3ZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNzg0MzEsImV4cCI6MjA5ODc1NDQzMX0.pPtgFT_JdQaVqftGWTQxTUnulQ8WUNvrbdy5AG4jy-4"; 
-        const IMGBB_KEY = "b465ee87375e9aabe31f96eeb810e227";
+        const SUPABASE_URL = "BURAYA_SUPABASE_URL_YAPIŞTIR"; 
+        const SUPABASE_KEY = "BURAYA_SUPABASE_ANON_KEY_YAPIŞTIR"; 
+        const IMGBB_KEY = "BURAYA_IMGBB_KEY_YAPIŞTIR";
 
         let allImages = [];
         let selectedImageIds = []; // 🗑️ Toplu silinecek id'lerin dizisi
@@ -231,33 +226,33 @@
             pageItems.forEach((img) => {
                 if(!img || !img.url) return;
                 const isChecked = selectedImageIds.includes(img.id.toString());
-          // Kartın en dış div'ini oluştururken şu sınıfları kullan:
-const card = document.createElement('div');
-card.className = "relative bg-gray-900/40 border border-purple-900/30 rounded-xl overflow-hidden flex flex-col h-full"; // h-full burası önemli!
-
-// Eski kısmı silip şu güncel kod bloğunu yapıştırın:
-card.innerHTML = `
-    ${isAdmin ? `
-        <div class="absolute top-3 left-3 z-10 bg-black/60 p-1.5 rounded-lg border border-purple-500/40 backdrop-blur-sm flex items-center justify-center">
-            <input type="checkbox" data-id="${img.id}" class="select-checkbox h-4 w-4 accent-purple-600 cursor-pointer rounded">
-        </div>
-        <button data-id="${img.id}" class="delete-btn absolute top-3 right-3 z-10 bg-red-600/90 hover:bg-red-700 text-white p-2 rounded-lg border border-red-500 shadow-lg" title="Sil">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-        </button>
-    ` : ''}
-    <div class="aspect-video w-full overflow-hidden bg-gray-900 flex items-center justify-center">
-        <img src="${img.url}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://placehold.co/600x400/1a102f/ffffff?text=Resim+Yuklenemedi'">
-    </div>
-    
-    <!-- YENİ MANTIKSAL KISIM: Sadece açıklama doluysa bu div oluşacak -->
-    ${(img.caption && img.caption.trim() !== "") ? `
-        <div class="p-4 border-t border-purple-950/40 bg-black/20">
-            <p class="text-sm text-gray-300 font-medium truncate">${img.caption}</p>
-        </div>
-    ` : ''}
-`;
+                const card = document.createElement('div');
+                card.className = "gallery-card relative bg-gray-950/40 border border-purple-950/60 rounded-xl overflow-hidden cursor-pointer neon-border hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-1";
+                
+                // renderPage fonksiyonu içindeki şu satırı bul:
+card.addEventListener('click', (e) => {
+    if (!e.target.closest('.delete-btn') && !e.target.closest('.select-checkbox')) {
+        // İD'yi de gönderiyoruz!
+        openModal(img.url, img.caption || "", img.id); 
+    }
+});
+                card.innerHTML = `
+                    ${isAdmin ? `
+                        <div class="absolute top-3 left-3 z-10 bg-black/60 p-1.5 rounded-lg border border-purple-500/40 backdrop-blur-sm flex items-center justify-center">
+                            <input type="checkbox" data-id="${img.id}" class="select-checkbox h-4 w-4 accent-purple-600 cursor-pointer rounded" ${isChecked ? 'checked' : ''}>
+                        </div>
+                        
+                        <button data-id="${img.id}" class="delete-btn absolute top-3 right-3 z-10 bg-red-600/90 hover:bg-red-700 text-white p-2 rounded-lg border border-red-500 shadow-lg" title="Sil">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    ` : ''}
+                    <div class="aspect-video w-full overflow-hidden bg-gray-900 flex items-center justify-center">
+                        <img src="${img.url}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://placehold.co/600x400/1a102f/ffffff?text=Resim+Yuklenemedi'">
+                    </div>
+                    ${img.caption ? `<div class="p-4 border-t border-purple-950/40 bg-black/20"><p class="text-sm text-gray-300 font-medium truncate">${img.caption}</p></div>` : ''}
+                `;
                 galleryEl.appendChild(card);
             });
 
@@ -303,7 +298,8 @@ card.innerHTML = `
                 bulkBtn.classList.add('hidden');
             }
         }
-// 🗑️ Toplu Silme Butonunun Durumunu Güncelleme (Hata Korumalı)
+
+        // 🗑️ Toplu Silme Butonunun Durumunu Güncelleme (Hata Korumalı)
         function updateBulkDeleteButton() {
             const bulkBtn = document.getElementById('bulk-delete-btn');
             const countEl = document.getElementById('select-count');
