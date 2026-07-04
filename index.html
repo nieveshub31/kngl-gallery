@@ -9,19 +9,27 @@
    <style>
 
 <style>
-    /* Webkit tarayıcılar (Chrome, Safari, Edge, Opera) için */
+    /* 1. Tüm sayfa yapısını kilitle ve scrollbar alanını sıfırla */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden; /* Yatay scroll'u tamamen kapat */
+        scrollbar-width: none !important; /* Firefox için */
+    }
+
+    /* 2. Chrome, Safari ve Edge için scrollbar'ı tamamen yok et */
     ::-webkit-scrollbar {
-        display: none;
+        width: 0px !important;
+        height: 0px !important;
+        display: none !important;
     }
 
-    /* Firefox için */
-    html {
-        scrollbar-width: none;
-    }
-
-    /* IE ve Edge (eski sürümler) için */
-    html {
-        -ms-overflow-style: none;
+    /* 3. İçerik kutularında da scrollbar varsa onları da gizle */
+    * {
+        -ms-overflow-style: none !important; /* IE için */
+        scrollbar-width: none !important;
     }
     /* Kaydırma barını tamamen yok etmek için */
     html, body {
