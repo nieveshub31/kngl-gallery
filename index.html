@@ -97,6 +97,17 @@
         </div>
     </main>
 
+<div class="max-w-4xl mx-auto px-6 mb-8 flex flex-col sm:flex-row gap-4">
+    <input type="text" id="search-input" placeholder="Görselleri ara (açıklamaya göre...)" 
+           oninput="filterGallery()" class="w-full bg-gray-900 border border-purple-900/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+    
+    <select id="sort-select" onchange="filterGallery()" class="bg-gray-900 border border-purple-900/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500">
+        <option value="newest">En Yeniler</option>
+        <option value="oldest">En Eskiler</option>
+    </select>
+</div>
+
+    
     <div id="image-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal()">
     <button class="absolute top-6 right-6 text-white text-3xl">&times;</button>
     <div class="max-w-5xl w-full max-h-[85vh] flex flex-col items-center" onclick="event.stopPropagation()">
@@ -671,6 +682,37 @@ async function saveCaption() {
     } finally {
         btn.innerText = "Kaydet";
     }
+}
+
+
+// Arama ve Sıralama Fonksiyonu
+function filterGallery() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const sortValue = document.getElementById('sort-select').value;
+
+    let filtered = [...allImages];
+
+    // 1. Arama Filtresi
+    filtered = filtered.filter(img => 
+        (img.caption || "").toLowerCase().includes(searchTerm)
+    );
+
+    // 2. Sıralama
+    if (sortValue === 'newest') {
+        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else {
+        filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+
+    // Filtrelenmiş veriyi sayfaya yansıt
+    renderFilteredPage(filtered);
+}
+
+// Filtrelenmiş veriyi çizen özel fonksiyon
+function renderFilteredPage(data) {
+    // Mevcut tüm mantığı buraya taşıyoruz (allImages yerine data kullanıyoruz)
+    // Sadece `renderPage` içerisindeki `allImages.slice(...)` kısmını `data.slice(...)` yapman yeterli.
+    // İstersen mevcut renderPage'i güncellemek yerine renderFilteredPage'i kullanabiliriz.
 }
         
     </script>
