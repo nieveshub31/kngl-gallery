@@ -235,22 +235,28 @@
 const card = document.createElement('div');
 card.className = "relative bg-gray-900/40 border border-purple-900/30 rounded-xl overflow-hidden flex flex-col h-full"; // h-full burası önemli!
 
-// Ardından innerHTML kısmını bu şekilde güncelle:
+// Eski kısmı silip şu güncel kod bloğunu yapıştırın:
 card.innerHTML = `
-    ${isAdmin ? `... (delete butonları vs aynen kalsın) ...` : ''}
-    
-    <div class="aspect-video w-full overflow-hidden bg-gray-900 flex-shrink-0">
-        <img src="${img.url}" class="w-full h-full object-cover">
+    ${isAdmin ? `
+        <div class="absolute top-3 left-3 z-10 bg-black/60 p-1.5 rounded-lg border border-purple-500/40 backdrop-blur-sm flex items-center justify-center">
+            <input type="checkbox" data-id="${img.id}" class="select-checkbox h-4 w-4 accent-purple-600 cursor-pointer rounded">
+        </div>
+        <button data-id="${img.id}" class="delete-btn absolute top-3 right-3 z-10 bg-red-600/90 hover:bg-red-700 text-white p-2 rounded-lg border border-red-500 shadow-lg" title="Sil">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </button>
+    ` : ''}
+    <div class="aspect-video w-full overflow-hidden bg-gray-900 flex items-center justify-center">
+        <img src="${img.url}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://placehold.co/600x400/1a102f/ffffff?text=Resim+Yuklenemedi'">
     </div>
     
-    <!-- AÇIKLAMA KISMI: Burayı esnek yapıyoruz -->
-    <div class="flex-grow flex flex-col justify-end">
-        ${(img.caption && img.caption.trim() !== "") ? `
-            <div class="p-3 border-t border-purple-950/40 bg-black/40">
-                <p class="text-xs text-gray-300 font-medium truncate">${img.caption}</p>
-            </div>
-        ` : ''}
-    </div>
+    <!-- YENİ MANTIKSAL KISIM: Sadece açıklama doluysa bu div oluşacak -->
+    ${(img.caption && img.caption.trim() !== "") ? `
+        <div class="p-4 border-t border-purple-950/40 bg-black/20">
+            <p class="text-sm text-gray-300 font-medium truncate">${img.caption}</p>
+        </div>
+    ` : ''}
 `;
                 galleryEl.appendChild(card);
             });
