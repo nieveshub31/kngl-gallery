@@ -95,7 +95,7 @@
 
             <div id="progressContainer" class="hidden space-y-1.5 bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg">
                 <div class="flex justify-between text-xs font-semibold">
-                    <span class="text-zinc-400 flex items-center gap-1"><i class="fa-solid fa-spinner animate-spin text-red-500"></i> Görsel Supabase bulut veritabanına yükleniyor...</span>
+                    <span class="text-zinc-400 flex items-center gap-1"><i class="fa-solid fa-spinner animate-spin text-red-500"></i> Görsel bulut veritabanına yükleniyor...</span>
                     <span id="progressPercent" class="text-red-500">0%</span>
                 </div>
                 <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
@@ -117,11 +117,9 @@
     </div>
 
     <script>
-        // 🛠️ APILERİ BURAYA YAPIŞTIRACAKSIN:
         const SUPABASE_URL = "https://mfylftsrwzhzxmkweisk.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1meWxmdHNyd3poenhta3dlaXNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNDY5NzEsImV4cCI6MjA5ODgyMjk3MX0.dstUusRnLGuQ2DZ7OGnoLSD-Vt6JmAg7GT1EY3PJuLw";
 
-        // Supabase Bağlantısını Başlatma
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const AUTH_PASS = "nieves 1312";
@@ -135,7 +133,6 @@
             setupDragAndDrop();
         };
 
-        // Supabase'den Verileri Canlı Çekme (Herkes Aynı Resimleri Görür)
         async function fetchGalleryFromSupabase() {
             const grid = document.getElementById('galleryGrid');
             grid.innerHTML = `<div class="col-span-full text-center py-20 text-zinc-500"><i class="fa-solid fa-spinner animate-spin text-2xl mb-2"></i><br>Galeri yükleniyor...</div>`;
@@ -161,6 +158,7 @@
                 updateAdminUI();
             } else {
                 document.getElementById('loginModal').classList.remove('hidden');
+                document.getElementById('passwordInput').value = "";
                 document.getElementById('passwordInput').focus();
             }
         }
@@ -196,14 +194,14 @@
             const lockIcon = document.getElementById('lockIcon');
 
             if (isAdmin) {
-                bulkBtn.classList.remove('hidden');
-                openUploadBtn.classList.remove('hidden');
+                if(bulkBtn) bulkBtn.classList.remove('hidden');
+                if(openUploadBtn) openUploadBtn.classList.remove('hidden');
                 adminBtnText.innerText = "Çıkış Yap";
                 adminBtn.classList.add('neon-border', 'text-red-500');
                 lockIcon.className = "fa-solid fa-lock-open";
             } else {
-                bulkBtn.classList.add('hidden');
-                openUploadBtn.classList.add('hidden');
+                if(bulkBtn) bulkBtn.classList.add('hidden');
+                if(openUploadBtn) openUploadBtn.classList.add('hidden');
                 adminBtnText.innerText = "Yönetici Paneli";
                 adminBtn.classList.remove('neon-border', 'text-red-500');
                 lockIcon.className = "fa-solid fa-lock";
@@ -215,6 +213,8 @@
         function setupDragAndDrop() {
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
+
+            if(!dropZone || !fileInput) return;
 
             dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-red-500', 'bg-zinc-900'); });
@@ -242,7 +242,6 @@
             reader.readAsDataURL(file);
         }
 
-        // Supabase Gerçek Online Yükleme Fonksiyonu
         async function handleUpload() {
             const urlInput = document.getElementById('urlInput').value;
             const descInput = document.getElementById('descInput').value;
@@ -260,7 +259,6 @@
             const progressBar = document.getElementById('progressBar');
             const progressPercent = document.getElementById('progressPercent');
 
-            // Akıcı yüklenme barı animasyonu
             const interval = setInterval(async () => {
                 progress += 10;
                 progressBar.style.width = progress + '%';
@@ -269,7 +267,6 @@
                 if (progress >= 100) {
                     clearInterval(interval);
                     
-                    // Supabase 'images' tablosuna satır ekleme
                     const { error } = await supabase
                         .from('images')
                         .insert([
@@ -284,7 +281,7 @@
                         resetUploadForm();
                     } else {
                         closeModal('uploadModal');
-                        fetchGalleryFromSupabase(); // Veritabanını yeniden tetikle
+                        fetchGalleryFromSupabase();
                     }
                 }
             }, 80); 
@@ -315,8 +312,8 @@
             }
 
             images.forEach(img => {
-                const isSelected = selectedImages.includes(img.id);
-                // Tarih formatlama (Supabase created_at sütunundan)
+                // Veritabanı ID'sini güvenli bir şekilde metne çevirip kontrol ediyoruz
+                const isSelected = selectedImages.includes(String(img.id));
                 const formattedDate = img.created_at ? new Date(img.created_at).toLocaleDateString('tr-TR') : new Date().toLocaleDateString('tr-TR');
                 const card = document.createElement('div');
                 card.className = "bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden group relative transition hover:border-zinc-700 flex flex-col justify-between";
@@ -331,8 +328,8 @@
                             <span><i class="fa-regular fa-calendar mr-1"></i>${formattedDate}</span>
                             ${isAdmin ? `
                                 <div class="flex items-center gap-3" onclick="event.stopPropagation();">
-                                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${img.id})" class="w-4 h-4 rounded accent-red-600 cursor-pointer">
-                                    <button onclick="deleteSingleImage(${img.id})" class="text-zinc-600 hover:text-red-500 transition text-sm"><i class="fa-solid fa-trash-can"></i></button>
+                                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect('${img.id}')" class="w-4 h-4 rounded accent-red-600 cursor-pointer">
+                                    <button onclick="deleteSingleImage('${img.id}')" class="text-zinc-600 hover:text-red-500 transition text-sm"><i class="fa-solid fa-trash-can"></i></button>
                                 </div>
                             ` : ''}
                         </div>
@@ -344,10 +341,11 @@
         }
 
         function toggleSelect(id) {
-            if (selectedImages.includes(id)) {
-                selectedImages = selectedImages.filter(item => item !== id);
+            const stringId = String(id);
+            if (selectedImages.includes(stringId)) {
+                selectedImages = selectedImages.filter(item => item !== stringId);
             } else {
-                selectedImages.push(id);
+                selectedImages.push(stringId);
             }
             updateBulkDeleteButton();
         }
@@ -361,7 +359,6 @@
             }
         }
 
-        // Supabase Tekli Silme
         async function deleteSingleImage(id) {
             if (confirm("Bu görseli veritabanından kalıcı olarak silmek istediğinize emin misiniz?")) {
                 const { error } = await supabase
@@ -372,13 +369,12 @@
                 if (error) {
                     alert("Silme hatası: " + error.message);
                 } else {
-                    selectedImages = selectedImages.filter(item => item !== id);
+                    selectedImages = selectedImages.filter(item => String(item) !== String(id));
                     fetchGalleryFromSupabase();
                 }
             }
         }
 
-        // Supabase Toplu Silme
         async function deleteSelectedImages() {
             if (confirm(`${selectedImages.length} adet görseli veritabanından tamamen silmek istediğinize emin misiniz?`)) {
                 const { error } = await supabase
