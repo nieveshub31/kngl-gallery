@@ -7,6 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
+    /* 1. Tüm sayfa yapısını kilitle ve scrollbar alanını sıfırla */
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden; /* Yatay scroll'u tamamen kapat */
+        scrollbar-width: none !important; /* Firefox için */
+    }
+
+    /* 2. Chrome, Safari ve Edge için scrollbar'ı tamamen yok et */
+    ::-webkit-scrollbar {
+        width: 0px !important;
+        height: 0px !important;
+        display: none !important;
+    }
+
+    /* 3. İçerik kutularında da scrollbar varsa onları da gizle */
+    * {
+        -ms-overflow-style: none !important; /* IE için */
+        scrollbar-width: none !important;
+    }
     /* Kaydırma barını tamamen yok etmek için */
     html, body {
         margin: 0;
@@ -203,7 +225,7 @@
         const PASSPHRASE = "nieves1312"; 
         
         // 🔑 ANAHTARLARINI BURAYA YENİDEN YAZ:
-        const SUPABASE_URL = "https://mmkusfynqosmvpsbwewc.supabase.co/rest/v1/"; 
+        const SUPABASE_URL = "https://mmkusfynqosmvpsbwewc.supabase.co"; 
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ta3VzZnlucW9zbXZwc2J3ZXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNzg0MzEsImV4cCI6MjA5ODc1NDQzMX0.pPtgFT_JdQaVqftGWTQxTUnulQ8WUNvrbdy5AG4jy-4"; 
         const IMGBB_KEY = "b465ee87375e9aabe31f96eeb810e227";
 
@@ -783,7 +805,7 @@ window.addEventListener('load', () => {
             document.body.style.overflow = "auto";
             preloader.style.display = 'none';
         }, 800); 
-    }, 2000); // 2.5 saniye göster
+    }, 1500); // 2.5 saniye göster
 });
         
     </script>
