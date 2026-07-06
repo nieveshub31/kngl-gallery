@@ -482,33 +482,40 @@
             border-color: var(--accent-green);
         }
 
-        /* SILME BUTONU KÖŞEYE SABİTLENDİ */
-        .delete-card-btn {
-            position: absolute;
-            top: 12px; 
-            right: 12px;
-            background-color: rgba(255, 74, 74, 0.95);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            width: 34px;
-            height: 34px;
-            font-size: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            z-index: 15; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-            line-height: 1;
-            pointer-events: auto; /* Tıklanabilir olmasını sağlar */
-        }
-        .delete-card-btn:hover {
-            background-color: var(--danger-red);
-            transform: scale(1.1);
-        }
+        /* SILME BUTONU GÜNCEL HALİ */
+.delete-card-btn {
+    position: absolute;
+    top: 12px; 
+    right: 12px;
+    background-color: rgba(255, 74, 74, 0.95);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    
+    /* İşaretin boyutu */
+    font-size: 22px; 
+    font-weight: bold;
+    
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 15; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    
+    /* line-height'i kaldırıyoruz, aşağıya şunları ekliyoruz */
+    line-height: 0; 
+    pointer-events: auto;
+}
+
+/* İşareti yukarı itmek için özel kural */
+.delete-card-btn::before {
+    content: "×"; /* İşareti buradan değiştirirsen buraya yaz */
+    margin-top: -3px; /* Bu değerle oynayarak sembolü milimetrik yukarı/aşağı alabilirsin */
+}
 
         /* SEÇİM KUTUSU DA RESMİN SOL ÜSTÜNE SABİTLENDİ */
         .card-select-checkbox {
