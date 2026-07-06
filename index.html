@@ -167,7 +167,6 @@
             box-shadow: 0 5px 15px rgba(255, 74, 74, 0.2);
         }
 
-        /* --- PROGRESS BAR (İLERLEME ÇUBUĞU) --- */
         .progress-container {
             width: 100%;
             background-color: var(--bg-darker);
@@ -187,7 +186,6 @@
             transition: width 0.3s ease;
         }
 
-        /* --- MODAL POPUP YAPISI --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -251,7 +249,6 @@
         }
         .modal-close-btn:hover { color: white; }
 
-        /* --- ÇOKLU YÜKLEME VE ÖZEL ETİKETLEME --- */
         .upload-grid {
             display: grid;
             grid-template-columns: 1.2fr 1fr;
@@ -391,6 +388,8 @@
             cursor: pointer;
             user-select: none;
             -webkit-user-drag: none;
+            display: flex;
+            flex-direction: column;
         }
 
         .media-card:hover {
@@ -419,11 +418,32 @@
         }
 
         .card-footer {
-            padding: 18px;
+            padding: 14px;
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        /* ADMIN ETİKET DÜZENLEME ALANI */
+        .admin-tag-edit-area {
+            padding: 10px 14px 0 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .admin-tag-input {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 11px;
+            border-radius: 6px;
+            background-color: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+        }
+        .admin-tag-input:focus {
+            border-color: var(--accent-green);
         }
 
         .tag {
@@ -611,7 +631,6 @@
             <div class="controls-area">
                 <input type="text" id="searchInput" placeholder="Tag araması yap...">
                 
-                <!-- SIRA DEĞİŞTİRME ÖZELLİĞİ (FİLTRE) -->
                 <select id="sortSelect">
                     <option value="newest">En Yeni Önce</option>
                     <option value="oldest">En Eski Önce</option>
@@ -662,7 +681,6 @@
                         <input type="file" id="fileInput" accept="image/*" multiple hidden>
                     </div>
                     
-                    <!-- GELİŞMİŞ ÖNİZLEME VE ÖZEL ETİKETLEME ALANI -->
                     <div class="preview-wrapper" id="previewWrapper" style="display: none;">
                         <div class="preview-container" id="previewContainer"></div>
                     </div>
@@ -672,7 +690,6 @@
                     <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
                     <input type="text" id="tagInput" placeholder="Genel Etiketler (İsteğe bağlı, virgülle ayırın: lspd, car)">
                     
-                    <!-- YÜKLEME İLERLEME ÇUBUĞU (PROGRESS BAR) -->
                     <div class="progress-container" id="uploadProgressContainer">
                         <div class="progress-bar" id="uploadProgressBar"></div>
                     </div>
@@ -911,7 +928,6 @@
             addLog(`Kuyruğa yeni yerel dosyalar eklendi. Sayı: ${files.length}`, 'info');
             for (let i = 0; i < files.length; i++) {
                 if (files[i].type.startsWith('image/')) {
-                    // Her dosyaya ait benzersiz bir ID ve özel boş tag tanımlıyoruz
                     selectedFilesQueue.push({
                         id: Date.now() + '_' + Math.random().toString(36).substring(4),
                         file: files[i],
@@ -943,7 +959,6 @@
                         <button class="remove-preview-btn" data-id="${itemData.id}">&times;</button>
                     `;
 
-                    // Satır içi etiket yazıldıkça veriyi güncelle
                     row.querySelector('.inline-tag-input').addEventListener('input', function(ev) {
                         itemData.customTag = ev.target.value;
                     });
@@ -974,12 +989,12 @@
         if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
         // ==========================================
-        // 7. DOSYA / ÇOKLU LINK YÜKLEME VE PROGRESS BAR MOTORU
+        // 7. DOSYA / ÇOKLU LINK YÜKLEME MOTORU (ZORUNLULUK KALKTI)
         // ==========================================
         if (uploadBtn) {
             uploadBtn.addEventListener('click', async () => {
                 const linkInputRaw = document.getElementById('linkInput').value;
-                const generalTags = document.getElementById('tagInput').value;
+                const generalTags = document.getElementById('tagInput').value.trim();
                 const statusText = document.getElementById('uploadStatus');
                 
                 if (!knglSupaClient) return;
@@ -996,12 +1011,6 @@
                     return alert('Lütfen yüklemek için dosya seçin veya geçerli görsel linkleri girin.');
                 }
 
-                // Eğer hiç etiket girilmemişse (ne genel ne özel) uyarı ver
-                const hasPrivateTags = selectedFilesQueue.some(x => x.customTag.trim().length > 0);
-                if (!generalTags && !hasPrivateTags && linkUrls.length === 0) {
-                    return alert('Lütfen en azından bir genel etiket veya görsellere özel bir etiket tanımlayın.');
-                }
-
                 statusText.style.color = 'var(--text-white)';
                 statusText.innerText = "Kuyruk işleniyor, lütfen bekleyin...";
                 addLog('Toplu yükleme/indeksleme algoritması başlatıldı...', 'info');
@@ -1009,7 +1018,7 @@
                 // Uzak Linklerin İndekslenmesi
                 if (linkUrls.length > 0) {
                     addLog(`Toplam ${linkUrls.length} adet uzak URL veritabanına indeksleniyor...`, 'info');
-                    const insertRows = linkUrls.map(url => ({ image_url: url, tags: generalTags || 'link' }));
+                    const insertRows = linkUrls.map(url => ({ image_url: url, tags: generalTags || '' }));
                     const { error: bulkLinkErr } = await knglSupaClient.from('gallery_images').insert(insertRows);
                     
                     if (bulkLinkErr) {
@@ -1042,18 +1051,16 @@
                             continue; 
                         }
 
-                        // Eğer o görsele ait özel etiket varsa onu al, yoksa genel etiket kümesini ata
+                        // Eğer özel veya genel etiket yoksa boş dize gider
                         const finalTags = item.customTag.trim() ? item.customTag.trim() : generalTags;
 
                         const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
                         await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: finalTags }]);
                         
-                        // Progress bar yüzdesini güncelle
                         const percentComplete = Math.round(((i + 1) / totalFiles) * 100);
                         uploadProgressBar.style.width = `${percentComplete}%`;
                     }
                     
-                    // İşlem bitince sıfırla ve gizle
                     selectedFilesQueue = [];
                     renderPreviews();
                     setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1000);
@@ -1094,17 +1101,14 @@
             }
         }
 
-        // Arama ve Sıralama Filtrelerini Aynı Anda Çalıştıran Ortak Fonksiyon
         function applyFiltersAndSorting() {
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const sortOrder = sortSelect ? sortSelect.value : 'newest';
 
-            // 1. Arama Filtresi
             filteredData = allGalleryData.filter(item => 
-                item.tags && item.tags.toLowerCase().includes(searchTerm)
+                (item.tags || '').toLowerCase().includes(searchTerm)
             );
 
-            // 2. Sıralama Motoru
             if (sortOrder === 'newest') {
                 filteredData.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
             } else if (sortOrder === 'oldest') {
@@ -1137,6 +1141,34 @@
             loadMoreBatch();
         }
 
+        // CANLI ETİKET GÜNCELLEME MOTORU (DB ENTEGRASYONU)
+        async function updateCardTagsInDatabase(id, newTagsValue, cardElement) {
+            addLog(`ID:${id} için etiket güncelleme talebi gönderildi...`, 'info');
+            const trimmedTags = newTagsValue.trim();
+            
+            const { error } = await knglSupaClient
+                .from('gallery_images')
+                .update({ tags: trimmedTags })
+                .eq('id', id);
+
+            if (error) {
+                addLog(`ID:${id} etiket güncelleme hatası: ` + error.message, 'error');
+                alert('Etiket güncellenirken bir sorun oluştu!');
+            } else {
+                addLog(`ID:${id} etiketleri başarıyla güncellendi: "${trimmedTags}"`, 'success');
+                
+                // Küresel veriyi yerel olarak güncelle (Arama/Sıralama bozulmasın diye)
+                const targetObj = allGalleryData.find(x => x.id == id);
+                if (targetObj) targetObj.tags = trimmedTags;
+                
+                // Kart üzerindeki alt tag alanını dinamik yenile
+                const footer = cardElement.querySelector('.card-footer');
+                if (footer) {
+                    footer.innerHTML = trimmedTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
+                }
+            }
+        }
+
         function loadMoreBatch() {
             const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
             const adminDisplay = isAdminActive ? 'flex' : 'none';
@@ -1144,7 +1176,9 @@
             addLog(`Galeri akışına yeni grup ekleniyor. Sayı: ${nextBatch.length}`, 'info');
 
             nextBatch.forEach(item => {
-                const tagsHtml = (item.tags || '').split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
+                const currentTags = item.tags || '';
+                const tagsHtml = currentTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
+                
                 const card = document.createElement('div');
                 card.className = 'media-card';
                 card.setAttribute('data-id', item.id);
@@ -1155,14 +1189,22 @@
                     <div class="img-container">
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
                     </div>
+                    
+                    <!-- ADMIN CANLI TAG EDİTÖRÜ -->
+                    <div class="admin-tag-edit-area" style="display: ${adminDisplay}">
+                        <input type="text" class="admin-tag-input" placeholder="Etiketleri düzenle (virgülle ayır)" value="${currentTags}">
+                    </div>
+
                     <div class="card-footer">${tagsHtml}</div>
                 `;
 
+                // Kart Tıklama Davranışları
                 card.addEventListener('click', (e) => {
                     const checkbox = card.querySelector('.card-select-checkbox');
                     const deleteBtn = card.querySelector('.delete-card-btn');
+                    const tagInput = card.querySelector('.admin-tag-input');
                     
-                    if (e.target === checkbox || e.target === deleteBtn || e.target.closest('.delete-card-btn')) return;
+                    if (e.target === checkbox || e.target === deleteBtn || e.target.closest('.delete-card-btn') || e.target === tagInput) return;
 
                     if (isAdminActive) {
                         checkbox.checked = !checkbox.checked;
@@ -1172,6 +1214,22 @@
                         openLightbox(item.image_url);
                     }
                 });
+
+                // Canlı Düzenleme Input Eventleri
+                const inlineTagInput = card.querySelector('.admin-tag-input');
+                if (inlineTagInput) {
+                    // Kaydetme tetikleyicileri (Kutudan çıkınca veya Enter'a basınca)
+                    inlineTagInput.addEventListener('blur', function() {
+                        if (this.value !== item.tags) {
+                            updateCardTagsInDatabase(item.id, this.value, card);
+                        }
+                    });
+                    inlineTagInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            this.blur(); // focus'u kaldırarak blur eventini tetikler
+                        }
+                    });
+                }
 
                 card.querySelector('.card-select-checkbox').addEventListener('click', (e) => {
                     card.classList.toggle('selected', e.target.checked);
@@ -1220,14 +1278,12 @@
             }
         };
 
-        // Canlı Arama Dinleyicisi
         if (searchInput) {
             searchInput.addEventListener('input', () => {
                 applyFiltersAndSorting();
             });
         }
 
-        // Sıralama Seçim Dinleyicisi
         if (sortSelect) {
             sortSelect.addEventListener('change', () => {
                 addLog(`Sıralama kuralı değiştirildi: "${sortSelect.value}"`, 'info');
