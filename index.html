@@ -86,7 +86,7 @@
             gap: 16px;
         }
 
-        input {
+        input, textarea {
             background-color: var(--bg-input);
             border: 1px solid var(--border-color);
             color: var(--text-white);
@@ -97,7 +97,13 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        input:focus {
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
             border-color: var(--accent-green);
             box-shadow: 0 0 15px var(--accent-glow);
         }
@@ -176,7 +182,7 @@
         }
 
         .modal-content.large-panel {
-            max-width: 800px;
+            max-width: 850px;
             border-color: var(--accent-green);
             box-shadow: 0 0 30px rgba(0, 255, 135, 0.1);
         }
@@ -218,7 +224,7 @@
         /* --- ÇOKLU YÜKLEME ARABİRİMİ --- */
         .upload-grid {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1fr 1.1fr;
             gap: 24px;
             margin-top: 15px;
         }
@@ -279,7 +285,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            pointer-events: none; /* Sürüklemeyi tamamen engellemek için */
+            pointer-events: none;
         }
 
         .preview-item .remove-preview-btn {
@@ -304,7 +310,7 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            gap: 16px;
+            gap: 14px;
         }
 
         .divider-text {
@@ -337,8 +343,8 @@
             position: relative;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            user-select: none; /* Kart üzerindeki metin/resim seçimini kapat */
-            -webkit-user-drag: none; /* Safari sürükleme koruması */
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
         .media-card:hover {
@@ -351,7 +357,7 @@
             height: 240px;
             overflow: hidden;
             background-color: var(--bg-darker);
-            pointer-events: none; /* Altındaki imajın sürükleme algılarını üst katmanda eritir */
+            pointer-events: none;
         }
 
         .img-container img {
@@ -359,7 +365,7 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.6s ease;
-            -webkit-user-drag: none; /* Tarayıcı sürüklemesini engelle */
+            -webkit-user-drag: none;
         }
 
         .media-card:hover .img-container img {
@@ -455,7 +461,7 @@
             -webkit-user-drag: none;
         }
 
-        /* --- DETAYLI LOG PANELİ (Girişte Kapalı) --- */
+        /* --- DETAYLI LOG PANELİ --- */
         .live-logger-panel {
             position: fixed;
             bottom: 20px;
@@ -603,8 +609,8 @@
                     </div>
                 </div>
                 <div class="form-right">
-                    <div class="divider-text">Veya Doğrudan Link</div>
-                    <input type="text" id="linkInput" placeholder="Görsel adresi (URL) yapıştırın...">
+                    <div class="divider-text">Doğrudan Link (Çoklu Giriş Aktif)</div>
+                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
                     <input type="text" id="tagInput" placeholder="Etiketler (virgülle ayırın: lspd, car)">
                     <button id="uploadBtn" style="justify-content: center;">Galeriye Gönder</button>
                 </div>
@@ -679,7 +685,7 @@
                 addLog('Kritik kimlik hatası: Supabase URL veya Key algılanamadı!', 'error');
             }
         } catch(e) {
-            addLog('Bağlantı esnasında API el смысл hatası: ' + e.message, 'error');
+            addLog('Bağlantı esnasında API hatası: ' + e.message, 'error');
         }
 
         // DOM Elementleri
@@ -881,52 +887,72 @@
         if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
         // ==========================================
-        // 7. DOSYA / LINK YÜKLEME AKSİYONU
+        // 7. DOSYA / ÇOKLU LINK YÜKLEME AKSİYONU
         // ==========================================
         if (uploadBtn) {
             uploadBtn.addEventListener('click', async () => {
-                const linkInput = document.getElementById('linkInput').value;
+                const linkInputRaw = document.getElementById('linkInput').value;
                 const tags = document.getElementById('tagInput').value;
                 const statusText = document.getElementById('uploadStatus');
                 
                 if (!knglSupaClient) return;
                 if (!tags) return alert('Lütfen etiket (tag) alanını doldurun.');
-                if (selectedFilesQueue.length === 0 && !linkInput) return alert('Dosya seçin veya bir link girin.');
+                
+                // Link Giriş Algoritması Geliştirildi (Satır sonu veya virgülleri ayıklar)
+                let linkUrls = [];
+                if (linkInputRaw.trim()) {
+                    linkUrls = linkInputRaw
+                        .split(/[\n,]+/) // Hem alt satır hem virgüle göre ayırır
+                        .map(url => url.trim())
+                        .filter(url => url.startsWith('http://') || url.startsWith('https://'));
+                }
+
+                if (selectedFilesQueue.length === 0 && linkUrls.length === 0) {
+                    return alert('Lütfen yüklemek için dosya seçin veya geçerli görsel linkleri girin.');
+                }
 
                 statusText.style.color = 'var(--text-white)';
                 statusText.innerText = "Kuyruk işleniyor, lütfen bekleyin...";
-                addLog('Toplu yükleme algoritması başlatıldı...', 'info');
+                addLog('Toplu yükleme/indeksleme algoritması başlatıldı...', 'info');
 
-                if (linkInput && selectedFilesQueue.length === 0) {
-                    addLog(`Doğrudan URL indeksleme isteği gönderiliyor: ${linkInput.substring(0, 30)}...`, 'info');
-                    const { error } = await knglSupaClient.from('gallery_images').insert([{ image_url: linkInput, tags: tags }]);
-                    if (error) addLog('Veritabanı kayıt hatası: ' + error.message, 'error');
-                    else { addLog('Uzak URL kaydı başarıyla tamamlandı.', 'success'); fetchGalleryData(); }
+                // --- 1. Adım: Çoklu Linklerin Veritabanına Yazılması ---
+                if (linkUrls.length > 0) {
+                    addLog(`Toplam ${linkUrls.length} adet uzak URL veritabanına indeksleniyor...`, 'info');
+                    
+                    const insertRows = linkUrls.map(url => ({ image_url: url, tags: tags }));
+                    const { error: bulkLinkErr } = await knglSupaClient.from('gallery_images').insert(insertRows);
+                    
+                    if (bulkLinkErr) {
+                        addLog('Çoklu link veritabanı kayıt hatası: ' + bulkLinkErr.message, 'error');
+                    } else {
+                        addLog(`${linkUrls.length} adet harici görsel linki başarıyla kaydedildi.`, 'success');
+                    }
                     document.getElementById('linkInput').value = '';
-                    statusText.innerText = '';
-                    return;
                 }
 
-                addLog(`Toplam ${selectedFilesQueue.length} adet dosya sırayla buluta yüklenecek.`, 'storage');
-                for (let i = 0; i < selectedFilesQueue.length; i++) {
-                    const file = selectedFilesQueue[i];
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                    
-                    addLog(`Aktarılıyor (${i+1}/${selectedFilesQueue.length}): ${file.name} (${Math.round(file.size/1024)} KB)`, 'storage');
-                    const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
-                    if (upErr) { addLog(`Depolama hatası oluştu (${file.name}): ` + upErr.message, 'error'); continue; }
+                // --- 2. Adım: Kuyruktaki Yerel Dosyaların Yüklenmesi ---
+                if (selectedFilesQueue.length > 0) {
+                    addLog(`Toplam ${selectedFilesQueue.length} adet yerel dosya buluta aktarılıyor.`, 'storage');
+                    for (let i = 0; i < selectedFilesQueue.length; i++) {
+                        const file = selectedFilesQueue[i];
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                        
+                        addLog(`Aktarılıyor (${i+1}/${selectedFilesQueue.length}): ${file.name}`, 'storage');
+                        const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
+                        if (upErr) { addLog(`Depolama hatası oluştu (${file.name}): ` + upErr.message, 'error'); continue; }
 
-                    const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
-                    addLog(`Dosya yüklendi, veritabanı kaydı açılıyor...`, 'info');
-                    await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
+                        const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
+                        await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
+                    }
+                    selectedFilesQueue = [];
+                    renderPreviews();
                 }
 
                 statusText.style.color = 'var(--accent-green)';
-                statusText.innerText = 'Tüm medyalar yüklendi!';
-                addLog('Kuyruktaki tüm işlemler başarıyla tamamlandı, galeri yenileniyor.', 'success');
-                selectedFilesQueue = [];
-                renderPreviews();
+                statusText.innerText = 'Tüm medyalar sisteme işlendi!';
+                addLog('Kuyruktaki tüm işlemler tamamlandı, galeri yenileniyor.', 'success');
+                
                 document.getElementById('tagInput').value = '';
                 fetchGalleryData();
                 setTimeout(() => statusText.innerText = '', 3000);
@@ -992,7 +1018,6 @@
                 card.className = 'media-card';
                 card.setAttribute('data-id', item.id);
 
-                // Img etiketine draggable="false" koruması eklendi
                 card.innerHTML = `
                     <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
                     <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
