@@ -86,7 +86,7 @@
             gap: 16px;
         }
 
-        input, textarea {
+        input, textarea, select {
             background-color: var(--bg-input);
             border: 1px solid var(--border-color);
             color: var(--text-white);
@@ -97,19 +97,29 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        select {
+            cursor: pointer;
+            padding-right: 40px;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238f9cae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
         textarea {
             resize: vertical;
             min-height: 80px;
             font-family: inherit;
         }
 
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             border-color: var(--accent-green);
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
         #searchInput {
-            width: 300px;
+            width: 260px;
         }
 
         button {
@@ -157,6 +167,26 @@
             box-shadow: 0 5px 15px rgba(255, 74, 74, 0.2);
         }
 
+        /* --- PROGRESS BAR (İLERLEME ÇUBUĞU) --- */
+        .progress-container {
+            width: 100%;
+            background-color: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            height: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            transition: width 0.3s ease;
+        }
+
         /* --- MODAL POPUP YAPISI --- */
         .modal-overlay {
             position: fixed;
@@ -182,7 +212,7 @@
         }
 
         .modal-content.large-panel {
-            max-width: 850px;
+            max-width: 900px;
             border-color: var(--accent-green);
             box-shadow: 0 0 30px rgba(0, 255, 135, 0.1);
         }
@@ -221,10 +251,10 @@
         }
         .modal-close-btn:hover { color: white; }
 
-        /* --- ÇOKLU YÜKLEME ARABİRİMİ --- */
+        /* --- ÇOKLU YÜKLEME VE ÖZEL ETİKETLEME --- */
         .upload-grid {
             display: grid;
-            grid-template-columns: 1fr 1.1fr;
+            grid-template-columns: 1.2fr 1fr;
             gap: 24px;
             margin-top: 15px;
         }
@@ -243,7 +273,7 @@
             color: var(--text-gray);
             font-size: 14px;
             text-align: center;
-            min-height: 160px;
+            min-height: 140px;
             user-select: none;
         }
 
@@ -255,55 +285,72 @@
 
         .preview-wrapper {
             margin-top: 16px;
-            max-height: 200px;
+            max-height: 240px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             background-color: var(--bg-darker);
             border-radius: 10px;
-            padding: 10px;
+            padding: 12px;
         }
 
         .preview-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            gap: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .preview-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background-color: var(--bg-card);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         .preview-item {
             position: relative;
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             border-radius: 6px;
             overflow: hidden;
             border: 1px solid var(--border-color);
             background: #000;
-            cursor: pointer;
-            user-select: none;
+            flex-shrink: 0;
         }
 
         .preview-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            pointer-events: none;
         }
 
-        .preview-item .remove-preview-btn {
-            position: absolute;
-            top: 2px; right: 2px;
-            background: rgba(255, 74, 74, 0.85);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            width: 16px;
-            height: 16px;
-            font-size: 10px;
+        .preview-row input.inline-tag-input {
+            flex-grow: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .remove-preview-btn {
+            background: rgba(255, 74, 74, 0.15);
+            color: var(--danger-red);
+            border: 1px solid rgba(255, 74, 74, 0.3);
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            z-index: 5;
+            transition: all 0.2s;
+        }
+        .remove-preview-btn:hover {
+            background: var(--danger-red);
+            color: white;
         }
 
         .form-right {
@@ -549,6 +596,8 @@
         @media (max-width: 768px) {
             .upload-grid { grid-template-columns: 1fr; }
             .live-logger-panel { width: calc(100% - 40px); left: 20px; right: 20px; }
+            .controls-area { flex-wrap: wrap; }
+            #searchInput { width: 100%; }
         }
     </style>
 </head>
@@ -561,6 +610,15 @@
             </div>
             <div class="controls-area">
                 <input type="text" id="searchInput" placeholder="Tag araması yap...">
+                
+                <!-- SIRA DEĞİŞTİRME ÖZELLİĞİ (FİLTRE) -->
+                <select id="sortSelect">
+                    <option value="newest">En Yeni Önce</option>
+                    <option value="oldest">En Eski Önce</option>
+                    <option value="alpha-asc">A -> Z (Etiket)</option>
+                    <option value="alpha-desc">Z -> A (Etiket)</option>
+                </select>
+
                 <button id="deleteSelectedBtn" class="btn-danger" style="display: none;">Seçilenleri Sil (0)</button>
                 <button id="mainActionBtn">Resim Yükle</button>
                 <button id="exitAdminModeBtn" class="btn-secondary" style="display: none;">Admin Kapat</button>
@@ -571,14 +629,12 @@
         <div id="loading" style="text-align:center; padding:20px; display:none; color: var(--text-gray); font-weight: bold;">Daha fazla görsel yükleniyor...</div>
     </div>
 
-    <!-- TARAYICI ŞİFRE KAYDETME UYUMLU DOĞRULAMA PANELİ -->
     <div id="passwordModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" id="closePassModalBtn">&times;</button>
             <h2>Yönetici Doğrulaması</h2>
             <p class="panel-desc">Yükleme paneline erişmek için şifreyi girin.</p>
             
-            <!-- Standart form ve gizli username alanı tarayıcının şifreyi algılamasını sağlar -->
             <form id="loginForm" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 16px;">
                 <input type="text" name="username" value="admin" style="display:none;" autocomplete="username">
                 <input type="password" id="passwordInput" name="password" placeholder="Erişim şifresini yazın..." autocomplete="current-password" required>
@@ -605,6 +661,8 @@
                         <span id="dropZoneText">Birden fazla görsel sürükleyin veya tıklayıp seçin</span>
                         <input type="file" id="fileInput" accept="image/*" multiple hidden>
                     </div>
+                    
+                    <!-- GELİŞMİŞ ÖNİZLEME VE ÖZEL ETİKETLEME ALANI -->
                     <div class="preview-wrapper" id="previewWrapper" style="display: none;">
                         <div class="preview-container" id="previewContainer"></div>
                     </div>
@@ -612,7 +670,13 @@
                 <div class="form-right">
                     <div class="divider-text">Doğrudan Link (Çoklu Giriş Aktif)</div>
                     <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
-                    <input type="text" id="tagInput" placeholder="Etiketler (virgülle ayırın: lspd, car)">
+                    <input type="text" id="tagInput" placeholder="Genel Etiketler (İsteğe bağlı, virgülle ayırın: lspd, car)">
+                    
+                    <!-- YÜKLEME İLERLEME ÇUBUĞU (PROGRESS BAR) -->
+                    <div class="progress-container" id="uploadProgressContainer">
+                        <div class="progress-bar" id="uploadProgressBar"></div>
+                    </div>
+
                     <button id="uploadBtn" style="justify-content: center;">Galeriye Gönder</button>
                 </div>
             </div>
@@ -692,6 +756,7 @@
         // DOM Elementleri
         const galleryGrid = document.getElementById('galleryGrid');
         const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
         const mainActionBtn = document.getElementById('mainActionBtn');
         const exitAdminModeBtn = document.getElementById('exitAdminModeBtn');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
@@ -712,6 +777,8 @@
         const uploadBtn = document.getElementById('uploadBtn');
         const previewWrapper = document.getElementById('previewWrapper');
         const previewContainer = document.getElementById('previewContainer');
+        const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+        const uploadProgressBar = document.getElementById('uploadProgressBar');
 
         const lightboxOverlay = document.getElementById('lightboxOverlay');
         const lightboxImg = document.getElementById('lightboxImg');
@@ -777,7 +844,6 @@
             if (e.target === uploadModal) uploadModal.style.display = 'none'; 
         });
 
-        // Giriş Doğrulama Fonksiyonu (Hem buton tıklaması hem Form Submit tetikler)
         function handleLogin() {
             if (passwordInput && passwordInput.value === 'nieves1312') {
                 isAdminActive = true;
@@ -839,13 +905,18 @@
         }
 
         // ==========================================
-        // 6. ÇOKLU MEDYA SEÇİMİ (YÜKLEME ÖNİZLEME)
+        // 6. ÇOKLU MEDYA SEÇİMİ (YÜKLEME ÖNİZLEME & ÖZEL ETİKETLEME)
         // ==========================================
         function handleFilesSelection(files) {
             addLog(`Kuyruğa yeni yerel dosyalar eklendi. Sayı: ${files.length}`, 'info');
             for (let i = 0; i < files.length; i++) {
                 if (files[i].type.startsWith('image/')) {
-                    selectedFilesQueue.push(files[i]);
+                    // Her dosyaya ait benzersiz bir ID ve özel boş tag tanımlıyoruz
+                    selectedFilesQueue.push({
+                        id: Date.now() + '_' + Math.random().toString(36).substring(4),
+                        file: files[i],
+                        customTag: ''
+                    });
                 } else {
                     addLog(`Geçersiz format elendi: ${files[i].name}`, 'warn');
                 }
@@ -859,26 +930,35 @@
             if (selectedFilesQueue.length === 0) { previewWrapper.style.display = 'none'; return; }
             previewWrapper.style.display = 'block';
 
-            selectedFilesQueue.forEach((file, index) => {
+            selectedFilesQueue.forEach((itemData, index) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const item = document.createElement('div');
-                    item.className = 'preview-item';
-                    item.innerHTML = `
-                        <button class="remove-preview-btn" data-index="${index}">&times;</button>
-                        <img src="${e.target.result}" alt="Önizleme" draggable="false">
+                    const row = document.createElement('div');
+                    row.className = 'preview-row';
+                    row.innerHTML = `
+                        <div class="preview-item">
+                            <img src="${e.target.result}" alt="Önizleme" draggable="false">
+                        </div>
+                        <input type="text" class="inline-tag-input" placeholder="Bu görsele özel etiket (örn: pd, s14)" value="${itemData.customTag}">
+                        <button class="remove-preview-btn" data-id="${itemData.id}">&times;</button>
                     `;
-                    item.querySelector('img').addEventListener('click', () => openLightbox(e.target.result));
-                    item.querySelector('.remove-preview-btn').addEventListener('click', function(ev) {
+
+                    // Satır içi etiket yazıldıkça veriyi güncelle
+                    row.querySelector('.inline-tag-input').addEventListener('input', function(ev) {
+                        itemData.customTag = ev.target.value;
+                    });
+
+                    row.querySelector('.remove-preview-btn').addEventListener('click', function(ev) {
                         ev.stopPropagation();
-                        const removedIndex = parseInt(this.getAttribute('data-index'));
-                        addLog(`Dosya yükleme sırasından çıkarıldı: ${selectedFilesQueue[removedIndex].name}`, 'info');
-                        selectedFilesQueue.splice(removedIndex, 1);
+                        const targetId = this.getAttribute('data-id');
+                        selectedFilesQueue = selectedFilesQueue.filter(x => x.id !== targetId);
+                        addLog('Görsel yükleme sırasından ve özel etiket listesinden kaldırıldı.', 'info');
                         renderPreviews();
                     });
-                    previewContainer.appendChild(item);
+
+                    previewContainer.appendChild(row);
                 }
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(itemData.file);
             });
         }
 
@@ -894,16 +974,15 @@
         if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
         // ==========================================
-        // 7. DOSYA / ÇOKLU LINK YÜKLEME AKSİYONU
+        // 7. DOSYA / ÇOKLU LINK YÜKLEME VE PROGRESS BAR MOTORU
         // ==========================================
         if (uploadBtn) {
             uploadBtn.addEventListener('click', async () => {
                 const linkInputRaw = document.getElementById('linkInput').value;
-                const tags = document.getElementById('tagInput').value;
+                const generalTags = document.getElementById('tagInput').value;
                 const statusText = document.getElementById('uploadStatus');
                 
                 if (!knglSupaClient) return;
-                if (!tags) return alert('Lütfen etiket (tag) alanını doldurun.');
                 
                 let linkUrls = [];
                 if (linkInputRaw.trim()) {
@@ -917,13 +996,20 @@
                     return alert('Lütfen yüklemek için dosya seçin veya geçerli görsel linkleri girin.');
                 }
 
+                // Eğer hiç etiket girilmemişse (ne genel ne özel) uyarı ver
+                const hasPrivateTags = selectedFilesQueue.some(x => x.customTag.trim().length > 0);
+                if (!generalTags && !hasPrivateTags && linkUrls.length === 0) {
+                    return alert('Lütfen en azından bir genel etiket veya görsellere özel bir etiket tanımlayın.');
+                }
+
                 statusText.style.color = 'var(--text-white)';
                 statusText.innerText = "Kuyruk işleniyor, lütfen bekleyin...";
                 addLog('Toplu yükleme/indeksleme algoritması başlatıldı...', 'info');
 
+                // Uzak Linklerin İndekslenmesi
                 if (linkUrls.length > 0) {
                     addLog(`Toplam ${linkUrls.length} adet uzak URL veritabanına indeksleniyor...`, 'info');
-                    const insertRows = linkUrls.map(url => ({ image_url: url, tags: tags }));
+                    const insertRows = linkUrls.map(url => ({ image_url: url, tags: generalTags || 'link' }));
                     const { error: bulkLinkErr } = await knglSupaClient.from('gallery_images').insert(insertRows);
                     
                     if (bulkLinkErr) {
@@ -934,31 +1020,43 @@
                     document.getElementById('linkInput').value = '';
                 }
 
-                if (selectedFilesQueue.length === 0) {
-                    statusText.style.color = 'var(--accent-green)';
-                    statusText.innerText = 'Tüm medyalar sisteme işlendi!';
-                    fetchGalleryData();
-                    document.getElementById('tagInput').value = '';
-                    setTimeout(() => statusText.innerText = '', 3000);
-                    return;
-                }
-
+                // Yerel Dosyaların Progress Bar ile Yüklenmesi
                 if (selectedFilesQueue.length > 0) {
-                    addLog(`Toplam ${selectedFilesQueue.length} adet yerel dosya buluta aktarılıyor.`, 'storage');
-                    for (let i = 0; i < selectedFilesQueue.length; i++) {
-                        const file = selectedFilesQueue[i];
+                    uploadProgressContainer.style.display = 'block';
+                    uploadProgressBar.style.width = '0%';
+                    
+                    const totalFiles = selectedFilesQueue.length;
+                    addLog(`Toplam ${totalFiles} adet yerel dosya buluta aktarılıyor.`, 'storage');
+                    
+                    for (let i = 0; i < totalFiles; i++) {
+                        const item = selectedFilesQueue[i];
+                        const file = item.file;
                         const fileExt = file.name.split('.').pop();
                         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                         
-                        addLog(`Aktarılıyor (${i+1}/${selectedFilesQueue.length}): ${file.name}`, 'storage');
+                        addLog(`Aktarılıyor (${i+1}/${totalFiles}): ${file.name}`, 'storage');
+                        
                         const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
-                        if (upErr) { addLog(`Depolama hatası oluştu (${file.name}): ` + upErr.message, 'error'); continue; }
+                        if (upErr) { 
+                            addLog(`Depolama hatası oluştu (${file.name}): ` + upErr.message, 'error'); 
+                            continue; 
+                        }
+
+                        // Eğer o görsele ait özel etiket varsa onu al, yoksa genel etiket kümesini ata
+                        const finalTags = item.customTag.trim() ? item.customTag.trim() : generalTags;
 
                         const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
-                        await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
+                        await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: finalTags }]);
+                        
+                        // Progress bar yüzdesini güncelle
+                        const percentComplete = Math.round(((i + 1) / totalFiles) * 100);
+                        uploadProgressBar.style.width = `${percentComplete}%`;
                     }
+                    
+                    // İşlem bitince sıfırla ve gizle
                     selectedFilesQueue = [];
                     renderPreviews();
+                    setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1000);
                 }
 
                 statusText.style.color = 'var(--accent-green)';
@@ -972,7 +1070,7 @@
         }
 
         // ==========================================
-        // 8. PARÇA PARÇA YÜKLEME MOTORU (PAGINATION / SCROLL)
+        // 8. GALERİ VERİLERİNİ ÇEKME, FİLTRELEME VE SIRALAMA
         // ==========================================
         async function fetchGalleryData() {
             if (!galleryGrid || !knglSupaClient) return;
@@ -981,8 +1079,7 @@
             try {
                 const { data, error } = await knglSupaClient
                     .from('gallery_images')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                    .select('*');
 
                 if (error) { 
                     addLog('Veri çekme işlemi başarısız: ' + error.message, 'error'); 
@@ -990,13 +1087,35 @@
                 }
 
                 allGalleryData = data || [];
-                filteredData = [...allGalleryData];
-                
-                refreshGalleryUI();
+                applyFiltersAndSorting();
                 addLog(`Toplam ${allGalleryData.length} medya nesnesi başarıyla senkronize edildi.`, 'success');
             } catch (err) { 
                 addLog('Beklenmedik API hatası: ' + err.message, 'error'); 
             }
+        }
+
+        // Arama ve Sıralama Filtrelerini Aynı Anda Çalıştıran Ortak Fonksiyon
+        function applyFiltersAndSorting() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const sortOrder = sortSelect ? sortSelect.value : 'newest';
+
+            // 1. Arama Filtresi
+            filteredData = allGalleryData.filter(item => 
+                item.tags && item.tags.toLowerCase().includes(searchTerm)
+            );
+
+            // 2. Sıralama Motoru
+            if (sortOrder === 'newest') {
+                filteredData.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            } else if (sortOrder === 'oldest') {
+                filteredData.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+            } else if (sortOrder === 'alpha-asc') {
+                filteredData.sort((a, b) => (a.tags || '').localeCompare(b.tags || '', 'tr'));
+            } else if (sortOrder === 'alpha-desc') {
+                filteredData.sort((a, b) => (b.tags || '').localeCompare(a.tags || '', 'tr'));
+            }
+
+            refreshGalleryUI();
         }
 
         function refreshGalleryUI() {
@@ -1101,14 +1220,18 @@
             }
         };
 
+        // Canlı Arama Dinleyicisi
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                addLog(`Canlı arama filtresi uygulandı: "${term}"`, 'info');
-                filteredData = allGalleryData.filter(item => 
-                    item.tags && item.tags.toLowerCase().includes(term)
-                );
-                refreshGalleryUI();
+            searchInput.addEventListener('input', () => {
+                applyFiltersAndSorting();
+            });
+        }
+
+        // Sıralama Seçim Dinleyicisi
+        if (sortSelect) {
+            sortSelect.addEventListener('change', () => {
+                addLog(`Sıralama kuralı değiştirildi: "${sortSelect.value}"`, 'info');
+                applyFiltersAndSorting();
             });
         }
 
