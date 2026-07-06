@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KNGLRP | Premium Media Gallery</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -119,6 +117,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            user-select: none;
         }
 
         button:hover {
@@ -180,13 +179,21 @@
             box-shadow: 0 0 30px rgba(0, 255, 135, 0.1);
         }
 
+        /* Düzenlenen ve Çakışması Engellenen Modal Üst Alanı */
+        .modal-header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-right: 40px; /* Çarpı butonuna güvenli alan bırakır */
+        }
+
         .modal-content h2 {
             font-size: 22px;
-            margin-bottom: 8px;
             font-weight: 700;
         }
 
-        .modal-content p {
+        .modal-content p.panel-desc {
             color: var(--text-gray);
             font-size: 14px;
             margin-bottom: 24px;
@@ -194,14 +201,16 @@
 
         .modal-close-btn {
             position: absolute;
-            top: 20px; right: 20px;
+            top: 24px; 
+            right: 24px;
             background: transparent;
             border: none;
             color: var(--text-gray);
-            font-size: 24px;
+            font-size: 26px;
             cursor: pointer;
             transition: color 0.2s;
             z-index: 100;
+            line-height: 1;
         }
         .modal-close-btn:hover { color: white; }
 
@@ -236,7 +245,6 @@
             color: var(--text-white);
         }
 
-        /* Seçilen Görsellerin Önizleme Listesi */
         .preview-wrapper {
             margin-top: 16px;
             max-height: 200px;
@@ -362,6 +370,7 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
+        /* --- SİLME VE SEÇİM BUTONLARI --- */
         .delete-card-btn {
             position: absolute;
             top: 12px; right: 12px;
@@ -383,6 +392,19 @@
         .delete-card-btn:hover {
             background-color: var(--danger-red);
             transform: scale(1.1);
+        }
+
+        /* Toplu Seçim Checkbox Kutusu */
+        .card-select-checkbox {
+            position: absolute;
+            top: 16px; left: 16px;
+            width: 22px;
+            height: 22px;
+            accent-color: var(--accent-green);
+            cursor: pointer;
+            display: none;
+            z-index: 12;
+            border-radius: 6px;
         }
 
         /* --- LIGHTBOX (BÜYÜK RESİM ÖNİZLEME) --- */
@@ -494,30 +516,27 @@
 <body>
 
     <div class="container">
-        <!-- HEADER PANEL -->
         <header>
             <div class="logo-area">
                 <h1>KNGLRP <span>Gallery</span></h1>
             </div>
             <div class="controls-area">
                 <input type="text" id="searchInput" placeholder="Tag araması yap...">
+                <button id="deleteSelectedBtn" class="btn-danger" style="display: none; background-color: rgba(255,74,74,0.2);">Seçilenleri Sil (0)</button>
                 <button id="mainActionBtn">Resim Yükle</button>
                 <button id="exitAdminModeBtn" class="btn-secondary" style="display: none;">Admin Kapat</button>
             </div>
         </header>
 
-        <!-- MEDYA GRİD -->
         <main id="galleryGrid" class="gallery-grid">
-            <!-- JS Dinamik Yükleme Alanı -->
-        </main>
+            </main>
     </div>
 
-    <!-- ŞİFRE MODAL GİRİŞİ -->
     <div id="passwordModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" id="closePassModalBtn">&times;</button>
             <h2>Yönetici Doğrulaması</h2>
-            <p>Yükleme paneline erişmek için şifreyi girin.</p>
+            <p class="panel-desc">Yükleme paneline erişmek için şifreyi girin.</p>
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 <input type="password" id="passwordInput" placeholder="Erişim şifresini yazın...">
                 <button id="loginBtn" style="width: 100%; justify-content: center;">Onayla</button>
@@ -526,15 +545,15 @@
         </div>
     </div>
 
-    <!-- YÜKLEME ALANI (POPUP MODAL) -->
     <div id="uploadModal" class="modal-overlay">
         <div class="modal-content large-panel">
             <button class="modal-close-btn" id="closeUploadModalBtn">&times;</button>
-            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+            
+            <div class="modal-header-area">
                 <h2>Görsel Kontrol Paneli</h2>
-                <button id="deleteAllBtn" class="btn-danger" style="padding: 6px 12px; font-size: 11px;">Tüm Galeri Sıfırla</button>
+                <button id="deleteAllBtn" class="btn-danger" style="padding: 10px 18px; font-size: 13px;">Tüm Galeri Sıfırla</button>
             </div>
-            <p>Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
+            <p class="panel-desc">Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
             
             <div class="upload-grid">
                 <div>
@@ -542,7 +561,6 @@
                         <span id="dropZoneText">Birden fazla görsel sürükleyin veya tıklayıp seçin</span>
                         <input type="file" id="fileInput" accept="image/*" multiple hidden>
                     </div>
-                    <!-- ÇOKLU GÖRSEL ÖNİZLEME ALANI -->
                     <div class="preview-wrapper" id="previewWrapper" style="display: none;">
                         <div class="preview-container" id="previewContainer"></div>
                     </div>
@@ -558,7 +576,6 @@
         </div>
     </div>
 
-    <!-- GLOBAL LIGHTBOX POPUP (BÜYÜK RESİM ÖNİZLEME) -->
     <div id="lightboxOverlay" class="lightbox-overlay">
         <div class="lightbox-content">
             <button class="modal-close-btn" id="closeLightboxBtn" style="color:white; top:-40px; right:0;">&times;</button>
@@ -566,7 +583,6 @@
         </div>
     </div>
 
-    <!-- SAĞ ALT SİSTEM HATA VE LOG PANELİ -->
     <div class="live-logger-panel" id="liveLoggerPanel">
         <div class="logger-header" id="loggerHeader">
             <span>Sistem Log Paneli</span>
@@ -577,7 +593,6 @@
         </div>
     </div>
 
-    <!-- --- JAVASCRIPT --- -->
     <script>
         // ==========================================
         // 1. SUPABASE AYARLARI
@@ -587,7 +602,8 @@
         
         let knglSupaClient = null; 
         let isAdminActive = false; 
-        let selectedFilesQueue = []; // Çoklu yükleme kuyruğu dizisi
+        let selectedFilesQueue = []; 
+        let globalFetchedData = []; // Veritabanından gelen mevcut resimleri tutar
 
         function addLog(text, type = 'info') {
             const loggerBody = document.getElementById('loggerBody');
@@ -616,6 +632,7 @@
         const searchInput = document.getElementById('searchInput');
         const mainActionBtn = document.getElementById('mainActionBtn');
         const exitAdminModeBtn = document.getElementById('exitAdminModeBtn');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         const deleteAllBtn = document.getElementById('deleteAllBtn');
         
         const passwordModal = document.getElementById('passwordModal');
@@ -641,7 +658,7 @@
         const loggerHeader = document.getElementById('loggerHeader');
         const loggerToggleBtn = document.getElementById('loggerToggleBtn');
 
-        // Sayfa ilk yüklendiğinde hafızada adminlik var mı kontrol et
+        // Sayfa yüklendiğinde adminlik kontrolü
         if (sessionStorage.getItem('kngl_admin_session') === 'true') {
             isAdminActive = true;
             if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
@@ -649,43 +666,35 @@
         }
 
         // ==========================================
-        // 2. LOG PANELİ AÇIP KAPATMA MEKANİZMASI
+        // 2. LOG PANELİ KAPATMA
         // ==========================================
         if (loggerHeader) {
             loggerHeader.addEventListener('click', function() {
                 liveLoggerPanel.classList.toggle('collapsed');
-                if (liveLoggerPanel.classList.contains('collapsed')) {
-                    loggerToggleBtn.innerText = '[+]';
-                } else {
-                    loggerToggleBtn.innerText = '[-]';
-                }
+                loggerToggleBtn.innerText = liveLoggerPanel.classList.contains('collapsed') ? '[+]' : '[-]';
             });
         }
 
         // ==========================================
-        // 3. LIGHTBOX (BÜYÜK EKREN ÖNİZLEME)
+        // 3. LIGHTBOX
         // ==========================================
         window.openLightbox = function(url) {
             if (!url) return;
             lightboxImg.src = url;
             lightboxOverlay.style.display = 'flex';
         };
-
         if (closeLightboxBtn) closeLightboxBtn.addEventListener('click', () => lightboxOverlay.style.display = 'none');
         if (lightboxOverlay) {
-            lightboxOverlay.addEventListener('click', (e) => {
-                if (e.target === lightboxOverlay) lightboxOverlay.style.display = 'none';
-            });
+            lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) lightboxOverlay.style.display = 'none'; });
         }
 
         // ==========================================
-        // 4. MODAL POPUP TETİKLEYİCİLERİ
+        // 4. MODAL POPUP YÖNETİMİ
         // ==========================================
         if (mainActionBtn) {
             mainActionBtn.addEventListener('click', function() {
                 if (isAdminActive) {
                     uploadModal.style.display = 'flex';
-                    addLog('Yükleme paneli pop-up olarak açıldı.', 'info');
                 } else {
                     if (loginError) loginError.style.display = 'none';
                     if (passwordInput) { passwordInput.value = ''; passwordInput.focus(); }
@@ -696,53 +705,69 @@
 
         if (closePassModalBtn) closePassModalBtn.addEventListener('click', () => passwordModal.style.display = 'none');
         if (closeUploadModalBtn) closeUploadModalBtn.addEventListener('click', () => uploadModal.style.display = 'none');
-        
         window.addEventListener('click', (e) => { 
             if (e.target === passwordModal) passwordModal.style.display = 'none'; 
             if (e.target === uploadModal) uploadModal.style.display = 'none'; 
         });
 
-        // Şifre Giriş Kontrolü
         if (loginBtn) {
             loginBtn.addEventListener('click', function() {
                 if (passwordInput && passwordInput.value === 'nieves1312') {
                     isAdminActive = true;
-                    sessionStorage.setItem('kngl_admin_session', 'true'); // Hafızaya kaydet
+                    sessionStorage.setItem('kngl_admin_session', 'true');
                     passwordModal.style.display = 'none';
                     uploadModal.style.display = 'flex';
                     if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
-                    addLog('Yönetici kimliği doğrulandı. Oturum belleğe alındı.', 'success');
-                    
-                    fetchImages(); // Silme butonlarının senkronizasyonu için yeniden çek
+                    addLog('Yönetici kimliği doğrulandı.', 'success');
+                    fetchImages(); 
                 } else {
                     if (loginError) loginError.style.display = 'block';
-                    addLog('Hatalı şifre denemesi yapıldı!', 'error');
+                    addLog('Hatalı şifre denemesi!', 'error');
                 }
             });
         }
 
-        // Oturumu Elle Kapatma
         if (exitAdminModeBtn) {
             exitAdminModeBtn.addEventListener('click', function() {
                 isAdminActive = false;
-                sessionStorage.removeItem('kngl_admin_session'); // Hafızadan sil
+                sessionStorage.removeItem('kngl_admin_session');
                 exitAdminModeBtn.style.display = 'none';
                 uploadModal.style.display = 'none';
+                if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
                 fetchImages();
-                addLog('Yönetici oturumu sonlandırıldı.', 'info');
+                addLog('Yönetici oturumu kapatıldı.', 'info');
             });
         }
 
         // ==========================================
-        // 5. ÇOKLU MEDYA YÖNETİMİ & KART ÖNİZLEMELERİ
+        // 5. ASIL DOSYAYI STORAGE'DAN SİLME MANTIĞI
+        // ==========================================
+        async function removeFileFromStorage(imageUrl) {
+            if (!imageUrl || !imageUrl.includes('/storage/v1/object/public/gallery/')) return true;
+            try {
+                // URL'den dosya adını çeker
+                const fileName = imageUrl.split('/gallery/').pop();
+                if (!fileName) return false;
+
+                const { error } = await knglSupaClient.storage.from('gallery').remove([fileName]);
+                if (error) {
+                    addLog(`Storage dosya silinemedi (${fileName}): ` + error.message, 'error');
+                    return false;
+                }
+                addLog(`Asıl dosya depodan temizlendi: ${fileName}`, 'success');
+                return true;
+            } catch (err) {
+                addLog('Storage entegrasyon hatası: ' + err.message, 'error');
+                return false;
+            }
+        }
+
+        // ==========================================
+        // 6. ÇOKLU MEDYA SEÇİMİ (YÜKLEME)
         // ==========================================
         function handleFilesSelection(files) {
             for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('image/')) {
-                    selectedFilesQueue.push(files[i]);
-                } else {
-                    addLog('Sadece görsel dosyaları kabul edilir: ' + files[i].name, 'error');
-                }
+                if (files[i].type.startsWith('image/')) selectedFilesQueue.push(files[i]);
             }
             renderPreviews();
         }
@@ -750,38 +775,28 @@
         function renderPreviews() {
             if (!previewContainer || !previewWrapper) return;
             previewContainer.innerHTML = '';
-            
-            if (selectedFilesQueue.length === 0) {
-                previewWrapper.style.display = 'none';
-                return;
-            }
-
+            if (selectedFilesQueue.length === 0) { previewWrapper.style.display = 'none'; return; }
             previewWrapper.style.display = 'block';
+
             selectedFilesQueue.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const item = document.createElement('div');
                     item.className = 'preview-item';
                     item.setAttribute('onclick', `openLightbox("${e.target.result}")`);
-                    
                     item.innerHTML = `
                         <button class="remove-preview-btn" data-index="${index}">&times;</button>
                         <img src="${e.target.result}" alt="Önizleme">
                     `;
-                    
-                    // Önizlemeden silme olayı (Lightbox tetiklenmesin diye stopPropagation ekledik)
                     item.querySelector('.remove-preview-btn').addEventListener('click', function(ev) {
                         ev.stopPropagation();
-                        const idx = parseInt(this.getAttribute('data-index'));
-                        selectedFilesQueue.splice(idx, 1);
+                        selectedFilesQueue.splice(parseInt(this.getAttribute('data-index')), 1);
                         renderPreviews();
                     });
-
                     previewContainer.appendChild(item);
                 }
                 reader.readAsDataURL(file);
             });
-            addLog(`${selectedFilesQueue.length} adet görsel yükleme kuyruğuna eklendi.`, 'info');
         }
 
         if (dropZone) {
@@ -789,24 +804,14 @@
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
             dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-                if (e.dataTransfer && e.dataTransfer.files.length) {
-                    handleFilesSelection(e.dataTransfer.files);
-                }
+                e.preventDefault(); dropZone.classList.remove('dragover');
+                if (e.dataTransfer && e.dataTransfer.files.length) handleFilesSelection(e.dataTransfer.files);
             });
         }
-
-        if (fileInput) {
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files.length) {
-                    handleFilesSelection(e.target.files);
-                }
-            });
-        }
+        if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
         // ==========================================
-        // 6. TOPLU / TEKLİ BULUT YÜKLEME DÖNGÜSÜ
+        // 7. DOSYA / LINK YÜKLEME AKSİYONU
         // ==========================================
         if (uploadBtn) {
             uploadBtn.addEventListener('click', async () => {
@@ -814,163 +819,181 @@
                 const tags = document.getElementById('tagInput').value;
                 const statusText = document.getElementById('uploadStatus');
                 
-                if (!knglSupaClient) return addLog('HATA: Veritabanı bağlantısı yok.', 'error');
-                if (!tags) return alert('Lütfen arama filtreleri için tag alanını doldurun.');
-                if (selectedFilesQueue.length === 0 && !linkInput) return alert('Lütfen dosya yükleyin veya bir URL adresi girin.');
+                if (!knglSupaClient) return;
+                if (!tags) return alert('Lütfen etiket (tag) alanını doldurun.');
+                if (selectedFilesQueue.length === 0 && !linkInput) return alert('Dosya seçin veya bir link girin.');
 
                 statusText.style.color = 'var(--text-white)';
-                statusText.innerText = "İşlem sürüyor...";
-                
-                // 1. Durum: URL ile Tekli Yükleme
+                statusText.innerText = "Yükleniyor...";
+
                 if (linkInput && selectedFilesQueue.length === 0) {
-                    addLog('URL adresi üzerinden yükleme başlatıldı...', 'info');
-                    await insertDatabase(linkInput, tags, statusText);
+                    const { error } = await knglSupaClient.from('gallery_images').insert([{ image_url: linkInput, tags: tags }]);
+                    if (error) addLog('Hata: ' + error.message, 'error');
+                    else { addLog('URL başarıyla eklendi.', 'success'); fetchImages(); }
                     document.getElementById('linkInput').value = '';
+                    statusText.innerText = '';
                     return;
                 }
 
-                // 2. Durum: Kuyruktaki Dosyaları Sırayla Yükleme (Çoklu Dosya Döngüsü)
-                addLog(`Kuyruktaki ${selectedFilesQueue.length} adet görsel sırayla Storage alanına gönderiliyor...`, 'info');
-                
-                let successCount = 0;
-                // Senkron döngü ile hata payını ve sıralamayı koruyoruz
                 for (let i = 0; i < selectedFilesQueue.length; i++) {
                     const file = selectedFilesQueue[i];
-                    try {
-                        statusText.innerText = `Yükleniyor (${i + 1}/${selectedFilesQueue.length})`;
-                        
-                        const fileExt = file.name.split('.').pop();
-                        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                        
-                        const { error: uploadError } = await knglSupaClient.storage
-                            .from('gallery')
-                            .upload(fileName, file);
-                            
-                        if (uploadError) {
-                            addLog(`[Hata] ${file.name} yüklenemedi: ${uploadError.message}`, 'error');
-                            continue; // Bu dosya patladıysa sonrakine geç
-                        }
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                    
+                    const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
+                    if (upErr) { addLog('Depolama hatası: ' + upErr.message, 'error'); continue; }
 
-                        const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
-                        const publicUrl = data.publicUrl;
-
-                        const { error: dbError } = await knglSupaClient.from('gallery_images').insert([
-                            { image_url: publicUrl, tags: tags }
-                        ]);
-
-                        if (dbError) {
-                            addLog(`[Hata] ${file.name} veri tabanına işlenemedi: ${dbError.message}`, 'error');
-                        } else {
-                            addLog(`[Başarılı] ${file.name} sisteme işlendi.`, 'success');
-                            successCount++;
-                        }
-                    } catch (err) {
-                        addLog(`Beklenmedik döngü hatası: ${err.message}`, 'error');
-                    }
+                    const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
+                    await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
                 }
 
                 statusText.style.color = 'var(--accent-green)';
-                statusText.innerText = `${successCount} adet medya başarıyla galeriye aktarıldı!`;
-                
-                // Kuyruğu Temizle
+                statusText.innerText = 'Tüm medyalar yüklendi!';
                 selectedFilesQueue = [];
                 renderPreviews();
                 document.getElementById('tagInput').value = '';
-                if (fileInput) fileInput.value = '';
-                
-                setTimeout(() => { if (statusText) statusText.innerText = ''; }, 4000);
                 fetchImages();
+                setTimeout(() => statusText.innerText = '', 3000);
             });
         }
 
-        async function insertDatabase(url, tags, statusEl) {
-            try {
-                const { error: dbError } = await knglSupaClient.from('gallery_images').insert([{ image_url: url, tags: tags }]);
-                if (dbError) {
-                    addLog('Kayıt Hatası: ' + dbError.message, 'error');
-                    statusEl.innerText = 'Veritabanı hatası.';
-                } else {
-                    addLog('Medya URL kaydı başarıyla işlendi.', 'success');
-                    statusEl.innerText = 'Medya sisteme kaydedildi!';
-                    fetchImages();
-                }
-            } catch (e) { addLog('Veritabanı istisnası: ' + e.message, 'error'); }
-        }
-
         // ==========================================
-        // 7. GALERİ VERİ SENKRONİZASYONU (FETCH)
+        // 8. GALERİ VERİLERİNİ ÇEKME & CHECKBOX DÜZENİ
         // ==========================================
         async function fetchImages(searchQuery = '') {
             if (!galleryGrid || !knglSupaClient) return;
-            galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Medyalar senkronize ediliyor...</p>';
+            galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Senkronize ediliyor...</p>';
             
             try {
                 let query = knglSupaClient.from('gallery_images').select('*').order('created_at', { ascending: false });
                 if (searchQuery) query = query.ilike('tags', `%${searchQuery}%`);
 
                 const { data, error } = await query;
-                if (error) { addLog('Veri çekme hatası: ' + error.message, 'error'); return; }
+                if (error) { addLog('Veri çekilemedi: ' + error.message, 'error'); return; }
 
+                globalFetchedData = data || [];
                 galleryGrid.innerHTML = '';
-                if (!data || data.length === 0) {
-                    galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Gösterilebilecek görsel bulunamadı.</p>';
+                
+                if (globalFetchedData.length === 0) {
+                    galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Görsel bulunamadı.</p>';
+                    if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
                     return;
                 }
 
-                data.forEach(item => {
-                    const tagsHtml = (item.tags || '').split(',')
-                        .map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '')
-                        .join('');
+                if (isAdminActive && deleteSelectedBtn) deleteSelectedBtn.style.display = 'inline-flex';
 
+                globalFetchedData.forEach(item => {
+                    const tagsHtml = (item.tags || '').split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
                     const card = document.createElement('div');
                     card.className = 'media-card';
-                    
-                    // Card tıklandığında Lightbox aç (Ama silme butonuna tıklandıysa açma kontrolü JS'de)
                     card.setAttribute('onclick', `openLightbox("${item.image_url}")`);
                     
-                    const deleteBtnDisplay = isAdminActive ? 'flex' : 'none';
+                    const adminDisplay = isAdminActive ? 'flex' : 'none';
 
                     card.innerHTML = `
-                        <button class="delete-card-btn" style="display: ${deleteBtnDisplay}" data-id="${item.id}">&times;</button>
+                        <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
+                        <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
                         <div class="img-container">
                             <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy">
                         </div>
                         <div class="card-footer">${tagsHtml}</div>
                     `;
 
-                    // Silme butonuna tıklandığında üst karta tetiklenmeyi engelle (stopPropagation)
+                    // Checkbox tıklandığında resmin açılmasını engelle
+                    card.querySelector('.card-select-checkbox').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        updateSelectedCount();
+                    });
+
+                    // Tekli Silme Butonu Kontrolü
                     card.querySelector('.delete-card-btn').addEventListener('click', async function(e) {
                         e.stopPropagation();
+                        if (!confirm('Bu görseli kalıcı olarak silmek istiyor musunuz?')) return;
+                        
                         const id = this.getAttribute('data-id');
-                        if (!confirm('Bu görseli galeriden kalıcı olarak silmek istediğinize emin misiniz?')) return;
-                        try {
-                            const { error: delErr } = await knglSupaClient.from('gallery_images').delete().eq('id', id);
-                            if (delErr) addLog('Silme hatası: ' + delErr.message, 'error');
-                            else { addLog(`ID: ${id} olan görsel başarıyla silindi.`, 'success'); fetchImages(); }
-                        } catch (err) { addLog('Silme esnasında hata: ' + err.message, 'error'); }
+                        const targetItem = globalFetchedData.find(x => x.id == id);
+                        
+                        if (targetItem) {
+                            // Önce dosyayı depodan (Storage) uçurur
+                            await removeFileFromStorage(targetItem.image_url);
+                        }
+
+                        // Sonra veri tabanından siler
+                        const { error: delErr } = await knglSupaClient.from('gallery_images').delete().eq('id', id);
+                        if (delErr) addLog('Silme Hatası: ' + delErr.message, 'error');
+                        else { addLog('Görsel başarıyla kaldırıldı.', 'success'); fetchImages(); }
                     });
 
                     galleryGrid.appendChild(card);
                 });
-                addLog('Galeri verileri başarıyla senkronize edildi.', 'info');
-            } catch (err) { addLog('Fetch Hatası: ' + err.message, 'error'); }
+                updateSelectedCount();
+            } catch (err) { addLog('Hata: ' + err.message, 'error'); }
         }
 
         if (searchInput) searchInput.addEventListener('input', (e) => fetchImages(e.target.value));
 
-        // Toplu Silme Aksiyonu
-        if (deleteAllBtn) {
-            deleteAllBtn.addEventListener('click', async function() {
-                if (!confirm('DİKKAT: Galerideki TÜM resimler kalıcı olarak silinecek!')) return;
-                if (!confirm('Son onay?')) return;
-                try {
-                    const { error } = await knglSupaClient.from('gallery_images').delete().gt('id', 0);
-                    if (error) addLog('Toplu silme hatası: ' + error.message, 'error');
-                    else { addLog('Tüm galeri veritabanından tamamen temizlendi!', 'success'); uploadModal.style.display = 'none'; fetchImages(); }
-                } catch (err) { addLog('Toplu temizleme hatası: ' + err.message, 'error'); }
+        // Onay Kutusu Sayacını Güncelleme
+        function updateSelectedCount() {
+            const checkedBoxes = document.querySelectorAll('.card-select-checkbox:checked');
+            if (deleteSelectedBtn) {
+                deleteSelectedBtn.innerText = `Seçilenleri Sil (${checkedBoxes.length})`;
+                deleteSelectedBtn.style.backgroundColor = checkedBoxes.length > 0 ? 'rgba(255, 74, 74, 0.9)' : 'rgba(255, 74, 74, 0.2)';
+                deleteSelectedBtn.style.color = checkedBoxes.length > 0 ? '#fff' : var(--danger-red);
+            }
+        }
+
+        // ==========================================
+        // 9. TOPLU VE SEÇEREK SİLME AKSİYONLARI
+        // ==========================================
+        
+        // A) Seçilenleri Silme Butonu
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', async function() {
+                const checkedBoxes = document.querySelectorAll('.card-select-checkbox:checked');
+                if (checkedBoxes.length === 0) return alert('Lütfen silmek istediğiniz görselleri kutucuklardan seçin.');
+                if (!confirm(`Seçtiğiniz ${checkedBoxes.length} adet görseli depodan ve galeriden kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+
+                addLog('Seçilen ögeler için toplu silme döngüsü başladı...', 'info');
+                
+                for (let box of checkedBoxes) {
+                    const id = box.getAttribute('data-id');
+                    const targetItem = globalFetchedData.find(x => x.id == id);
+                    if (targetItem) {
+                        await removeFileFromStorage(targetItem.image_url);
+                    }
+                    await knglSupaClient.from('gallery_images').delete().eq('id', id);
+                }
+
+                addLog('Seçili ögelerin toplu silme işlemi tamamlandı.', 'success');
+                fetchImages();
             });
         }
 
+        // B) Tüm Galeriyi Sıfırlama Butonu
+        if (deleteAllBtn) {
+            deleteAllBtn.addEventListener('click', async function() {
+                if (!confirm('DİKKAT: Galerideki TÜM resimler ve bulut deposundaki asıl dosyalar kalıcı olarak silinecek!')) return;
+                if (!confirm('Son ve kesin onayınız mı? Bu işlemin geri dönüşü yoktur.')) return;
+
+                addLog('Tüm galeri verileri ve depolama alanı temizleniyor...', 'info');
+
+                // Önce depodaki tüm asıl görselleri tek tek tarayıp siler
+                for (let item of globalFetchedData) {
+                    await removeFileFromStorage(item.image_url);
+                }
+
+                // Veritabanı tablosunu sıfırlar
+                const { error } = await knglSupaClient.from('gallery_images').delete().gt('id', 0);
+                if (error) addLog('Tablo temizleme hatası: ' + error.message, 'error');
+                else {
+                    addLog('Veritabanı ve bulut deposu tamamen sıfırlandı.', 'success');
+                    uploadModal.style.display = 'none';
+                    fetchImages();
+                }
+            });
+        }
+
+        // Başlangıç Tetikleyicisi
         fetchImages();
     </script>
 </body>
