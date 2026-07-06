@@ -482,7 +482,6 @@
             border-color: var(--accent-green);
         }
 
-        /* SILME BUTONU GÜNCEL HALİ */
 .delete-card-btn {
     position: absolute;
     top: 12px; 
@@ -494,27 +493,30 @@
     width: 34px;
     height: 34px;
     
-    /* İşaretin boyutu */
-    font-size: 22px; 
-    font-weight: bold;
-    
-    cursor: pointer;
+    /* İşaretin hizalaması */
     display: flex;
     align-items: center;
     justify-content: center;
+    
+    cursor: pointer;
     transition: all 0.2s ease;
     z-index: 15; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    
-    /* line-height'i kaldırıyoruz, aşağıya şunları ekliyoruz */
-    line-height: 0; 
     pointer-events: auto;
 }
 
-/* İşareti yukarı itmek için özel kural */
+/* Çarpı işaretini burada tek ve kontrollü olarak ekliyoruz */
 .delete-card-btn::before {
-    content: "×"; /* İşareti buradan değiştirirsen buraya yaz */
-    margin-top: -3px; /* Bu değerle oynayarak sembolü milimetrik yukarı/aşağı alabilirsin */
+    content: "×"; 
+    font-size: 25px;
+    font-weight: bold;
+    line-height: 0;
+    margin-top: -3px; /* Yukarı-aşağı kaydırmak için bu değeri değiştir */
+}
+
+.delete-card-btn:hover {
+    background-color: var(--danger-red);
+    transform: scale(1.1);
 }
 
         /* SEÇİM KUTUSU DA RESMİN SOL ÜSTÜNE SABİTLENDİ */
@@ -1245,7 +1247,7 @@
                 card.innerHTML = `
                     <div class="img-container">
                         <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
-                        <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
+                        <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}"></button>
                         
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
                         
