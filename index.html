@@ -198,7 +198,7 @@
             margin-bottom: 24px;
         }
 
-       .modal-close-btn {
+        .modal-close-btn {
     position: absolute;
     top: 15px; 
     right: 15px;
@@ -815,56 +815,30 @@
         }
         if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
-       // ==========================================
-// YÜKLEME VE ÇOKLU İŞLEME MANTIĞI
-// ==========================================
-if (uploadBtn) {
-    uploadBtn.addEventListener('click', async () => {
-        const linkInput = document.getElementById('linkInput').value;
-        const tags = document.getElementById('tagInput').value;
-        const statusText = document.getElementById('uploadStatus');
-        
-        if (!tags) return alert('Lütfen etiket girin.');
+        // ==========================================
+        // 7. DOSYA / LINK YÜKLEME AKSİYONU
+        // ==========================================
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', async () => {
+                const linkInput = document.getElementById('linkInput').value;
+                const tags = document.getElementById('tagInput').value;
+                const statusText = document.getElementById('uploadStatus');
+                
+                if (!knglSupaClient) return;
+                if (!tags) return alert('Lütfen etiket (tag) alanını doldurun.');
+                if (selectedFilesQueue.length === 0 && !linkInput) return alert('Dosya seçin veya bir link girin.');
 
-        // 1. Çoklu Link İşleme (Satır satır ayırır)
-        const links = linkInput.split('\n').filter(l => l.trim() !== '');
-        
-        // 2. Yükleme süreci loglarını başlat
-        addLog(`Yükleme başlatıldı. ${selectedFilesQueue.length} dosya ve ${links.length} link tespit edildi.`, 'info');
+                statusText.style.color = 'var(--text-white)';
+                statusText.innerText = "Yükleniyor...";
 
-        // Linkleri İşle
-        for (let url of links) {
-            const { error } = await knglSupaClient.from('gallery_images').insert([{ image_url: url.trim(), tags: tags }]);
-            if (error) addLog(`Link yükleme hatası (${url}): ${error.message}`, 'error');
-            else addLog(`Link başarıyla eklendi: ${url.substring(0, 20)}...`, 'success');
-        }
-
-        // Dosyaları İşle
-        for (let file of selectedFilesQueue) {
-            addLog(`Yükleniyor: ${file.name}`, 'info');
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            
-            const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
-            if (upErr) { 
-                addLog(`Dosya storage hatası (${file.name}): ${upErr.message}`, 'error'); 
-            } else {
-                const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
-                await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
-                addLog(`Dosya başarıyla yüklendi: ${file.name}`, 'success');
-            }
-        }
-
-        // Reset
-        selectedFilesQueue = [];
-        document.getElementById('linkInput').value = '';
-        document.getElementById('tagInput').value = '';
-        renderPreviews();
-        fetchImages();
-        statusText.innerText = 'İşlem tamamlandı!';
-        setTimeout(() => statusText.innerText = '', 3000);
-    });
-}
+                if (linkInput && selectedFilesQueue.length === 0) {
+                    const { error } = await knglSupaClient.from('gallery_images').insert([{ image_url: linkInput, tags: tags }]);
+                    if (error) addLog('Hata: ' + error.message, 'error');
+                    else { addLog('URL başarıyla eklendi.', 'success'); fetchImages(); }
+                    document.getElementById('linkInput').value = '';
+                    statusText.innerText = '';
+                    return;
+                }
 
                 for (let i = 0; i < selectedFilesQueue.length; i++) {
                     const file = selectedFilesQueue[i];
