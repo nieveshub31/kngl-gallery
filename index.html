@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FiveM Sunucu Galerisi</title>
+    <title>Sunucu Galerisi</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <header>
         <h1>Sunucu Galerisi</h1>
-        <input type="text" id="searchInput" placeholder="Etikete göre ara (örn: lspd, çete)...">
-        <button id="adminLoginBtn">Yetkili Girişi</button>
+        <div class="header-controls">
+            <input type="text" id="searchInput" placeholder="Etikete göre ara (örn: lspd, çete)...">
+            <button id="showLoginBtn">Yetkili Girişi</button>
+            <button id="logoutBtn" style="display: none;">Çıkış Yap</button>
+        </div>
     </header>
+
+    <section id="loginSection" style="display: none;">
+        <input type="email" id="emailInput" placeholder="Admin E-posta">
+        <input type="password" id="passwordInput" placeholder="Şifre">
+        <button id="loginBtn">Giriş Yap</button>
+        <p id="loginError" style="color: red; display: none;">Giriş başarısız.</p>
+    </section>
 
     <section id="uploadSection" style="display: none;">
         <h2>Yeni Görsel Yükle</h2>
@@ -21,16 +32,18 @@
             <input type="file" id="fileInput" accept="image/*" hidden>
         </div>
         
-        <p>VEYA</p>
-        <input type="text" id="linkInput" placeholder="Görsel linki yapıştır...">
+        <p style="text-align: center; margin: 10px 0;">VEYA LİNK İLE</p>
         
-        <input type="text" id="tagInput" placeholder="Etiketler (virgülle ayırın, örn: arac, modifiye)...">
+        <input type="text" id="linkInput" placeholder="Görsel linkini yapıştır...">
+        <input type="text" id="tagInput" placeholder="Etiketler (araya virgül koy, örn: araç, modifiye)">
+        
         <button id="uploadBtn">Görseli Galeriye Ekle</button>
+        <p id="uploadStatus"></p>
     </section>
 
     <main id="galleryGrid" class="grid-container">
         </main>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
