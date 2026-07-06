@@ -15,7 +15,7 @@
             --bg-main: #0a0b10;
             --bg-card: #11131a;
             --bg-input: #171a24;
-            --accent-green: #00ff87; /* Neon Yeşil */
+            --accent-green: #00ff87; 
             --accent-glow: rgba(0, 255, 135, 0.2);
             --text-white: #ffffff;
             --text-gray: #8f9cae;
@@ -38,7 +38,6 @@
             overflow-x: hidden;
         }
 
-        /* --- SİBERPUNK ARKA PLAN EFEKTİ --- */
         body::before {
             content: '';
             position: fixed;
@@ -56,7 +55,6 @@
             z-index: 1;
         }
 
-        /* --- HEADER --- */
         header {
             display: flex;
             justify-content: space-between;
@@ -86,7 +84,6 @@
             gap: 16px;
         }
 
-        /* --- INPUTS & BUTTONS --- */
         input {
             background-color: var(--bg-input);
             border: 1px solid var(--border-color);
@@ -127,18 +124,6 @@
             box-shadow: 0 5px 20px var(--accent-glow);
         }
 
-        button.btn-secondary {
-            background-color: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-white);
-        }
-
-        button.btn-secondary:hover {
-            background-color: var(--bg-input);
-            border-color: var(--text-gray);
-            box-shadow: none;
-        }
-
         button.btn-danger {
             background-color: transparent;
             border: 1px solid var(--danger-red);
@@ -151,14 +136,14 @@
             box-shadow: 0 5px 15px rgba(255, 74, 74, 0.2);
         }
 
-        /* --- YÜKLEME PANELİ (YETKİLİ GİRİŞİ YAPILDIĞINDA AÇILIR) --- */
+        /* YÜKLEME PANELİ */
         #uploadSection {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 32px;
             margin-bottom: 40px;
-            display: none; /* JS ile açılır */
+            display: none; /* Sadece gizli şifre yazılınca açılır */
         }
 
         #uploadSection h2 {
@@ -171,10 +156,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 24px;
-        }
-
-        @media (max-width: 900px) {
-            .upload-grid { grid-template-columns: 1fr; }
         }
 
         .drop-zone {
@@ -215,60 +196,7 @@
             text-transform: uppercase;
         }
 
-        /* --- MODERN GİRİŞ MODAL (POPUP) --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(5, 5, 8, 0.85);
-            backdrop-filter: blur(10px);
-            z-index: 999;
-            display: none; /* Sadece JS tetiklediğinde görünür */
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 420px;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            position: relative;
-            animation: modalFade 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes modalFade {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-content h2 {
-            font-size: 22px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .modal-content p {
-            color: var(--text-gray);
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        .modal-close-btn {
-            position: absolute;
-            top: 20px; right: 20px;
-            background: transparent;
-            border: none;
-            color: var(--text-gray);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-        }
-        .modal-close-btn:hover { color: white; }
-
-        /* --- GALERİ GRID SİSTEMİ --- */
+        /* GALERİ GRID */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -294,7 +222,6 @@
             height: 240px;
             overflow: hidden;
             background-color: var(--bg-darker);
-            position: relative;
         }
 
         .img-container img {
@@ -327,6 +254,9 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
+        @media (max-width: 900px) {
+            .upload-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 650px) {
             header { flex-direction: column; align-items: stretch; }
             .controls-area { flex-direction: column; align-items: stretch; }
@@ -343,13 +273,12 @@
             </div>
             <div class="controls-area">
                 <input type="text" id="searchInput" placeholder="Tag araması yap...">
-                <button id="showLoginBtn" class="btn-secondary">Yetkili Girişi</button>
-                <button id="logoutBtn" class="btn-danger" style="display: none;">Oturumu Kapat</button>
+                <button id="logoutBtn" class="btn-danger" style="display: none;">Paneli Kapat</button>
             </div>
         </header>
 
         <section id="uploadSection">
-            <h2>Yeni Galeri İçeriği Yayınla</h2>
+            <h2>Yeni Galeri İçeriği Yayınla <span style="color:var(--accent-green); font-size:12px; font-family:'JetBrains Mono'">(Admin Aktif)</span></h2>
             <div class="upload-grid">
                 <div id="dropZone" class="drop-zone">
                     <span id="dropZoneText">Görsel sürükleyin veya tıklayıp dosyadan seçin</span>
@@ -369,21 +298,8 @@
             </main>
     </div>
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" id="closeModalBtn">&times;</button>
-            <h2>Erişim Doğrulaması</h2>
-            <p>Galeri yönetim paneline erişmek için kodu girin.</p>
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                <input type="password" id="passwordInput" placeholder="Giriş kodunu yazın..." style="width: 100%;">
-                <button id="loginBtn" style="width: 100%; justify-content: center;">Paneli Aç</button>
-            </div>
-            <p id="loginError" style="color: var(--danger-red); display: none; margin-top: 14px; font-size: 14px; font-weight: 600; text-align: center;">Hatalı Erişim Kodu!</p>
-        </div>
-    </div>
-
     <script>
-        // --- 1. CONFIG (SADECE BURAYI DEĞİŞTİR) ---
+       // --- 1. CONFIG (SADECE BURAYI DEĞİŞTİR) ---
 const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co'; // Kendi URL'ni buraya yapıştır
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY'; // Kendi Anon Key'ini buraya yapıştır
 
@@ -397,74 +313,48 @@ try {
     console.error("Supabase yüklenemedi:", e);
 }
 
-        // Element Tanımlamaları
+        // Elementler
         const galleryGrid = document.getElementById('galleryGrid');
         const searchInput = document.getElementById('searchInput');
         const uploadSection = document.getElementById('uploadSection');
-        const showLoginBtn = document.getElementById('showLoginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const loginModal = document.getElementById('loginModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const passwordInput = document.getElementById('passwordInput');
-        const loginBtn = document.getElementById('loginBtn');
-        const loginError = document.getElementById('loginError');
         const dropZone = document.getElementById('dropZone');
         const dropZoneText = document.getElementById('dropZoneText');
         const fileInput = document.getElementById('fileInput');
         let selectedFile = null;
 
-        // --- 2. YETKİLİ GİRİŞ / POPUP MANTIĞI (HATA ALMAZ) ---
-        function checkSession() {
-            const status = localStorage.getItem('knglrp_session') === 'active';
-            if (status) {
+        // --- 2. GİZLİ KLAVYE DİNLEYİCİSİ (YENİ SİSTEM) ---
+        let inputBuffer = "";
+        window.addEventListener('keydown', function(e) {
+            // Eğer kullanıcı arama kutusuna yazı yazıyorsa gizli şifreyi tetiklemesin
+            if (document.activeElement === searchInput || document.activeElement.tagName === 'INPUT') {
+                return;
+            }
+            
+            // Basılan tuşu ekle
+            inputBuffer += e.key;
+            
+            // Sadece son 10 karakteri hafızada tut
+            if (inputBuffer.length > 20) {
+                inputBuffer = inputBuffer.substring(inputBuffer.length - 10);
+            }
+            
+            // Eğer yazılan kelime şifreye eşitse paneli aç
+            if (inputBuffer.includes("nieves1312")) {
                 uploadSection.style.display = 'block';
                 logoutBtn.style.display = 'inline-block';
-                showLoginBtn.style.display = 'none';
-            } else {
-                uploadSection.style.display = 'none';
-                logoutBtn.style.display = 'none';
-                showLoginBtn.style.display = 'inline-block';
-            }
-        }
-
-        // Yetkili Girişi Butonu -> Modalı Zorla Açar
-        showLoginBtn.addEventListener('click', function() {
-            loginError.style.display = 'none';
-            passwordInput.value = '';
-            loginModal.style.display = 'flex';
-        });
-
-        // Kapatma Butonu
-        closeModalBtn.addEventListener('click', function() {
-            loginModal.style.display = 'none';
-        });
-
-        // Dışarı tıklayınca kapatma
-        window.addEventListener('click', function(e) {
-            if (e.target === loginModal) {
-                loginModal.style.display = 'none';
+                uploadSection.scrollIntoView({ behavior: 'smooth' });
+                inputBuffer = ""; // temizle
             }
         });
 
-        // Kod Kontrolü
-        loginBtn.addEventListener('click', function() {
-            if (passwordInput.value === 'nieves1312') {
-                localStorage.setItem('knglrp_session', 'active');
-                loginError.style.display = 'none';
-                loginModal.style.display = 'none';
-                checkSession();
-            } else {
-                loginError.style.display = 'block';
-            }
-        });
-
-        // Çıkış
+        // Paneli kapat butonu
         logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('knglrp_session');
-            checkSession();
+            uploadSection.style.display = 'none';
+            logoutBtn.style.display = 'none';
         });
 
-        // --- 3. VERİ ÇEKME ---
+        // --- 3. VERİ ÇEKME SİSTEMİ ---
         async function fetchImages(searchQuery = '') {
             galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Veriler senkronize ediliyor...</p>';
             
@@ -534,7 +424,7 @@ try {
             }
         });
 
-        // --- 5. MEDYA YÜKLEME & SUPABASE DOCK ---
+        // --- 5. MEDYA YÜKLEME VE DATABASE KAYIT ---
         document.getElementById('uploadBtn').addEventListener('click', async () => {
             const linkInput = document.getElementById('linkInput').value;
             const tags = document.getElementById('tagInput').value;
@@ -578,7 +468,7 @@ try {
                 statusText.style.color = 'var(--accent-green)';
                 statusText.innerText = 'Medyalar başarıyla KNGLRP ağına yüklendi!';
                 
-                // Form Reset
+                // Formu sıfırla
                 document.getElementById('linkInput').value = '';
                 document.getElementById('tagInput').value = '';
                 selectedFile = null;
@@ -591,8 +481,7 @@ try {
             }
         });
 
-        // İlk Çalıştırma
-        checkSession();
+        // İlk veri çekme tetiklemesi
         fetchImages();
     </script>
 </body>
