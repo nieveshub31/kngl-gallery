@@ -238,6 +238,7 @@
             font-size: 14px;
             text-align: center;
             min-height: 160px;
+            user-select: none;
         }
 
         .drop-zone:hover, .drop-zone.dragover {
@@ -271,12 +272,14 @@
             border: 1px solid var(--border-color);
             background: #000;
             cursor: pointer;
+            user-select: none;
         }
 
         .preview-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            pointer-events: none; /* Sürüklemeyi tamamen engellemek için */
         }
 
         .preview-item .remove-preview-btn {
@@ -294,6 +297,7 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            z-index: 5;
         }
 
         .form-right {
@@ -333,6 +337,8 @@
             position: relative;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            user-select: none; /* Kart üzerindeki metin/resim seçimini kapat */
+            -webkit-user-drag: none; /* Safari sürükleme koruması */
         }
 
         .media-card:hover {
@@ -345,6 +351,7 @@
             height: 240px;
             overflow: hidden;
             background-color: var(--bg-darker);
+            pointer-events: none; /* Altındaki imajın sürükleme algılarını üst katmanda eritir */
         }
 
         .img-container img {
@@ -352,6 +359,7 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.6s ease;
+            -webkit-user-drag: none; /* Tarayıcı sürüklemesini engelle */
         }
 
         .media-card:hover .img-container img {
@@ -434,6 +442,7 @@
             position: relative;
             max-width: 90%;
             max-height: 85vh;
+            user-select: none;
         }
 
         .lightbox-content img {
@@ -443,6 +452,7 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
             border: 1px solid var(--border-color);
             object-fit: contain;
+            -webkit-user-drag: none;
         }
 
         /* --- DETAYLI LOG PANELİ (Girişte Kapalı) --- */
@@ -462,7 +472,6 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* Başlangıçta Kapalı Durması İçin */
         .live-logger-panel.collapsed {
             width: 200px;
         }
@@ -607,7 +616,7 @@
     <div id="lightboxOverlay" class="lightbox-overlay">
         <div class="lightbox-content">
             <button class="modal-close-btn" id="closeLightboxBtn" style="color:white; top:-40px; right:0;">&times;</button>
-            <img id="lightboxImg" src="" alt="Önizleme">
+            <img id="lightboxImg" src="" alt="Önizleme" draggable="false">
         </div>
     </div>
 
@@ -635,7 +644,6 @@
         let displayedCount = 0;  
         const itemsPerScroll = 20; 
 
-        // DETAYLANDIRILMIŞ VE GELİŞTİRİLMİŞ LOG FONKSİYONU
         function addLog(text, type = 'info') {
             const loggerBody = document.getElementById('loggerBody');
             if (!loggerBody) return;
@@ -661,7 +669,6 @@
             loggerBody.scrollTop = loggerBody.scrollHeight;
         }
 
-        // Başlangıç Loglarını Gönder
         addLog('Galeri çekirdek motoru ve arayüz yükleniyor...', 'info');
 
         try {
@@ -672,7 +679,7 @@
                 addLog('Kritik kimlik hatası: Supabase URL veya Key algılanamadı!', 'error');
             }
         } catch(e) {
-            addLog('Bağlantı esnasında API el sıkışma hatası: ' + e.message, 'error');
+            addLog('Bağlantı esnasında API el смысл hatası: ' + e.message, 'error');
         }
 
         // DOM Elementleri
@@ -707,7 +714,6 @@
         const loggerHeader = document.getElementById('loggerHeader');
         const loggerToggleBtn = document.getElementById('loggerToggleBtn');
 
-        // Oturum Kontrolü
         if (sessionStorage.getItem('kngl_admin_session') === 'true') {
             isAdminActive = true;
             if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
@@ -715,7 +721,7 @@
         }
 
         // ==========================================
-        // 2. LOG PANELİ KONTROLÜ (Tıklayınca Açılır/Kapanır)
+        // 2. LOG PANELİ KONTROLÜ
         // ==========================================
         if (loggerHeader) {
             loggerHeader.addEventListener('click', function() {
@@ -847,7 +853,7 @@
                     item.className = 'preview-item';
                     item.innerHTML = `
                         <button class="remove-preview-btn" data-index="${index}">&times;</button>
-                        <img src="${e.target.result}" alt="Önizleme">
+                        <img src="${e.target.result}" alt="Önizleme" draggable="false">
                     `;
                     item.querySelector('img').addEventListener('click', () => openLightbox(e.target.result));
                     item.querySelector('.remove-preview-btn').addEventListener('click', function(ev) {
@@ -986,11 +992,12 @@
                 card.className = 'media-card';
                 card.setAttribute('data-id', item.id);
 
+                // Img etiketine draggable="false" koruması eklendi
                 card.innerHTML = `
                     <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
                     <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
                     <div class="img-container">
-                        <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy">
+                        <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
                     </div>
                     <div class="card-footer">${tagsHtml}</div>
                 `;
@@ -1125,7 +1132,6 @@
             });
         }
 
-        // Uygulamayı Başlat
         fetchGalleryData();
     </script>
 </body>
