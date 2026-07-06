@@ -295,12 +295,21 @@
     </div>
 
     <script>
-        // 1. SUPABASE BİLGİLERİNİ BURAYA YAPIŞTIRIN
+        // --- 1. SUPABASE AYARLARI ---
+        // Bilgileri girdiğinde tırnak işaretlerini silmediğinden emin ol ('URL' şeklinde kalmalı)
         const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let supabase = null;
+        try {
+            if (window.supabase && SUPABASE_URL !== 'https://rqtlwqphwfjlysnwkpel.supabase.co') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch(e) {
+            console.error("Supabase bağlantı hatası:", e);
+        }
 
-        // Elementler
+        // DOM Elementleri
         const galleryGrid = document.getElementById('galleryGrid');
         const searchInput = document.getElementById('searchInput');
         const loginSection = document.getElementById('loginSection');
@@ -311,10 +320,58 @@
         const fileInput = document.getElementById('fileInput');
         let selectedFile = null;
 
-        // --- GALERİ ÇEKME VE FİLTRELEME ---
+        // --- 2. YETKİLİ PANEL BUTON KONTROLLERİ (GARANTİLİ ÇALIŞIR) ---
+        function checkLocalAuth() {
+            if (sessionStorage.getItem('isKnglrpAdmin') === 'true') {
+                uploadSection.style.display = 'block';
+                showLoginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                loginSection.style.display = 'none';
+            } else {
+                uploadSection.style.display = 'none';
+                showLoginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        // Tıklama olayı tamamen izole edildi, asla çökmez.
+        showLoginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (loginSection.style.display === 'none') {
+                loginSection.style.display = 'block';
+            } else {
+                loginSection.style.display = 'none';
+            }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const password = document.getElementById('passwordInput').value;
+            const errEl = document.getElementById('loginError');
+            
+            if (password === 'nieves1312') {
+                errEl.style.display = 'none';
+                sessionStorage.setItem('isKnglrpAdmin', 'true');
+                document.getElementById('passwordInput').value = '';
+                checkLocalAuth();
+            } else {
+                errEl.style.display = 'block';
+            }
+        });
+
+        logoutBtn.addEventListener('click', function() {
+            sessionStorage.removeItem('isKnglrpAdmin');
+            checkLocalAuth();
+        });
+
+        // --- 3. GÖRSEL LİSTELEME SİSTEMİ ---
         async function fetchImages(searchQuery = '') {
             galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-muted);">Medyalar yükleniyor...</p>';
             
+            if (!supabase) {
+                galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--danger);">Supabase API Key ayarları yapılmamış veya hatalı.</p>';
+                return;
+            }
+
             let query = supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
             
             if (searchQuery) {
@@ -354,45 +411,7 @@
 
         searchInput.addEventListener('input', (e) => fetchImages(e.target.value));
 
-        // --- BASİT KOD DOĞRULAMA (nieves1312) ---
-        // Oturumu tarayıcı hafızasında (sessionStorage) tutuyoruz, sayfa yenilenene kadar açık kalır.
-        function checkLocalAuth() {
-            if (sessionStorage.getItem('isKnglrpAdmin') === 'true') {
-                uploadSection.style.display = 'block';
-                showLoginBtn.style.display = 'none';
-                logoutBtn.style.display = 'inline-block';
-                loginSection.style.display = 'none';
-            } else {
-                uploadSection.style.display = 'none';
-                showLoginBtn.style.display = 'inline-block';
-                logoutBtn.style.display = 'none';
-            }
-        }
-
-        showLoginBtn.addEventListener('click', () => {
-            loginSection.style.display = loginSection.style.display === 'none' ? 'block' : 'none';
-        });
-
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            const password = document.getElementById('passwordInput').value;
-            const errEl = document.getElementById('loginError');
-            
-            if (password === 'nieves1312') {
-                errEl.style.display = 'none';
-                sessionStorage.setItem('isKnglrpAdmin', 'true');
-                document.getElementById('passwordInput').value = '';
-                checkLocalAuth();
-            } else {
-                errEl.style.display = 'block';
-            }
-        });
-
-        logoutBtn.addEventListener('click', () => {
-            sessionStorage.removeItem('isKnglrpAdmin');
-            checkLocalAuth();
-        });
-
-        // --- MEDYA YÜKLEME İŞLEMLERİ ---
+        // --- 4. SÜRÜKLE BIRAK / SEÇME OLAYLARI ---
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -414,11 +433,13 @@
             }
         });
 
+        // --- 5. MEDYA YUKLE BUTONU VE DB KAYIT ---
         document.getElementById('uploadBtn').addEventListener('click', async () => {
             const linkInput = document.getElementById('linkInput').value;
             const tags = document.getElementById('tagInput').value;
             const statusText = document.getElementById('uploadStatus');
             
+            if (!supabase) return alert('Supabase bağlantısı aktif değil!');
             if (!tags) return alert('Lütfen en az bir tag yazın!');
             if (!selectedFile && !linkInput) return alert('Dosya yükleyin veya link girin!');
 
@@ -468,7 +489,7 @@
             }
         });
 
-        // Sayfa ilk açıldığında tetiklenenler
+        // Başlangıç tetikleyicileri
         checkLocalAuth();
         fetchImages();
     </script>
