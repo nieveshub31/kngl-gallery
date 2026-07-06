@@ -109,9 +109,8 @@
 
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
             font-family: inherit;
-            line-height: 1.5;
         }
 
         input:focus, textarea:focus, select:focus {
@@ -174,7 +173,7 @@
             border: 1px solid var(--border-color);
             height: 12px;
             border-radius: 6px;
-            margin-top: 6px;
+            margin-top: 15px;
             overflow: hidden;
             display: none;
         }
@@ -211,36 +210,34 @@
         }
 
         .modal-content.large-panel {
-            max-width: 950px;
-            padding: 34px;
-            border-color: rgba(0, 255, 135, 0.3);
-            box-shadow: 0 0 40px rgba(0, 255, 135, 0.05);
+            max-width: 900px;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 30px rgba(0, 255, 135, 0.1);
         }
 
         .modal-header-area {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 16px;
             padding-right: 40px; 
         }
 
         .modal-content h2 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            letter-spacing: -0.5px;
         }
 
         .modal-content p.panel-desc {
             color: var(--text-gray);
             font-size: 14px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .modal-close-btn {
             position: absolute;
-            top: 28px; 
-            right: 28px;
+            top: 24px; 
+            right: 24px;
             background: transparent;
             border: none;
             color: var(--text-gray);
@@ -252,35 +249,28 @@
         }
         .modal-close-btn:hover { color: white; }
 
-        /* YÜKLEME PANELİ DÜZENLEMELERİ */
         .upload-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-            align-items: start;
-        }
-
-        .form-left {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+            margin-top: 15px;
         }
 
         .drop-zone {
             border: 2px dashed var(--border-color);
             background-color: var(--bg-darker);
-            border-radius: 14px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 24px;
+            padding: 30px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             color: var(--text-gray);
             font-size: 14px;
             text-align: center;
-            min-height: 160px;
+            min-height: 140px;
             user-select: none;
         }
 
@@ -288,22 +278,22 @@
             border-color: var(--accent-green);
             background-color: var(--bg-input);
             color: var(--text-white);
-            box-shadow: inset 0 0 20px rgba(0, 255, 135, 0.02);
         }
 
         .preview-wrapper {
-            max-height: 220px;
+            margin-top: 16px;
+            max-height: 240px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             background-color: var(--bg-darker);
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 10px;
+            padding: 12px;
         }
 
         .preview-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .preview-row {
@@ -311,16 +301,16 @@
             align-items: center;
             gap: 14px;
             background-color: var(--bg-card);
-            padding: 10px;
-            border-radius: 10px;
+            padding: 8px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
         }
 
         .preview-item {
             position: relative;
-            width: 54px;
-            height: 54px;
-            border-radius: 8px;
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
             overflow: hidden;
             border: 1px solid var(--border-color);
             background: #000;
@@ -335,19 +325,19 @@
 
         .preview-row input.inline-tag-input {
             flex-grow: 1;
-            padding: 10px 14px;
-            font-size: 13px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 6px;
         }
 
         .remove-preview-btn {
-            background: rgba(255, 74, 74, 0.1);
+            background: rgba(255, 74, 74, 0.15);
             color: var(--danger-red);
-            border: 1px solid rgba(255, 74, 74, 0.2);
-            border-radius: 8px;
-            width: 36px;
-            height: 36px;
-            font-size: 18px;
+            border: 1px solid rgba(255, 74, 74, 0.3);
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -358,29 +348,28 @@
         .remove-preview-btn:hover {
             background: var(--danger-red);
             color: white;
-            border-color: var(--danger-red);
         }
 
         .form-right {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            justify-content: flex-start;
+            gap: 14px;
         }
 
         .divider-text {
+            text-align: center;
             color: var(--text-gray);
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: -4px;
         }
 
-        /* GALERİ GRID VE KART TASARIMI */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
-            gap: 20px;
+            gap: 15px;
             opacity: 1;
             transition: opacity 0.4s ease-in-out; 
         }
@@ -401,7 +390,6 @@
             -webkit-user-drag: none;
             display: flex;
             flex-direction: column;
-            height: 260px; /* Sabit yükseklik ile tam uyum */
         }
 
         .media-card:hover {
@@ -411,11 +399,10 @@
 
         .img-container {
             width: 100%;
-            height: 100%;
+            height: 240px;
             overflow: hidden;
             background-color: var(--bg-darker);
             pointer-events: none;
-            position: relative;
         }
 
         .img-container img {
@@ -427,52 +414,31 @@
         }
 
         .media-card:hover .img-container img {
-            transform: scale(1.04);
+            transform: scale(1.05);
         }
 
-        /* RESİM ÜZERİNDEKİ TAG KATMANI (OVERLAY) */
-        .card-tags-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 30px 14px 14px 14px;
-            background: linear-gradient(to top, rgba(5, 5, 8, 0.95) 0%, rgba(5, 5, 8, 0.7) 50%, rgba(5, 5, 8, 0) 100%);
+        .card-footer {
+            padding: 14px;
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            pointer-events: none; /* Kart tıklamasını engellememesi için */
-            z-index: 5;
-        }
-
-        .tag {
-            background-color: rgba(23, 26, 36, 0.85);
-            color: var(--text-white);
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-family: 'JetBrains Mono', monospace;
-            backdrop-filter: blur(4px);
-        }
-
-        /* RESİM ÜZERİNDEKİ EDİTÖR GİRİŞİ */
-        .admin-tag-edit-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 14px;
-            background: rgba(10, 11, 16, 0.95);
             border-top: 1px solid var(--border-color);
-            z-index: 6;
+            margin-top: auto;
+        }
+        .card-footer:empty {
+            display: none;
         }
 
+        .admin-tag-edit-area {
+            padding: 10px 14px 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
         .admin-tag-input {
             width: 100%;
             padding: 8px 12px;
-            font-size: 12px;
+            font-size: 11px;
             border-radius: 6px;
             background-color: var(--bg-darker);
             border: 1px solid var(--border-color);
@@ -482,6 +448,17 @@
             border-color: var(--accent-green);
         }
 
+        .tag {
+            background-color: var(--bg-input);
+            color: var(--text-gray);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         .delete-card-btn {
             position: absolute;
             top: 12px; right: 12px;
@@ -489,8 +466,8 @@
             color: white;
             border: none;
             border-radius: 8px;
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -639,7 +616,7 @@
         .log-line.storage { color: var(--log-storage); }
 
         @media (max-width: 768px) {
-            .upload-grid { grid-template-columns: 1fr; gap: 20px; }
+            .upload-grid { grid-template-columns: 1fr; }
             .live-logger-panel { width: calc(100% - 40px); left: 20px; right: 20px; }
             .controls-area { flex-wrap: wrap; }
             #searchInput { width: 100%; }
@@ -699,8 +676,7 @@
             <p class="panel-desc">Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
             
             <div class="upload-grid">
-                <div class="form-left">
-                    <div class="divider-text">Yerel Dosya Seçimi</div>
+                <div>
                     <div id="dropZone" class="drop-zone">
                         <span id="dropZoneText">Birden fazla görsel sürükleyin veya tıklayıp seçin</span>
                         <input type="file" id="fileInput" accept="image/*" multiple hidden>
@@ -710,19 +686,16 @@
                         <div class="preview-container" id="previewContainer"></div>
                     </div>
                 </div>
-                
                 <div class="form-right">
                     <div class="divider-text">Doğrudan Link (Çoklu Giriş Aktif)</div>
                     <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
-                    
-                    <div class="divider-text">Ortak Etiket Tanımı</div>
                     <input type="text" id="tagInput" placeholder="Genel Etiketler (İsteğe bağlı, virgülle ayırın: lspd, car)">
                     
                     <div class="progress-container" id="uploadProgressContainer">
                         <div class="progress-bar" id="uploadProgressBar"></div>
                     </div>
 
-                    <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 16px;">Galeriye Gönder</button>
+                    <button id="uploadBtn" style="justify-content: center;">Galeriye Gönder</button>
                 </div>
             </div>
             <p id="uploadStatus" style="margin-top: 16px; font-size: 13px; font-weight: 600; text-align: center; color: var(--accent-green);"></p>
@@ -1142,7 +1115,7 @@
             } else if (sortOrder === 'alpha-asc') {
                 filteredData.sort((a, b) => (a.tags || '').localeCompare(b.tags || '', 'tr'));
             } else if (sortOrder === 'alpha-desc') {
-                filteredData.sort((a, b) => (b.tags || '').localeCompare(b.tags || '', 'tr'));
+                filteredData.sort((a, b) => (b.tags || '').localeCompare(a.tags || '', 'tr'));
             }
 
             refreshGalleryUI();
@@ -1186,23 +1159,16 @@
                 const targetObj = allGalleryData.find(x => x.id == id);
                 if (targetObj) targetObj.tags = trimmedTags;
                 
-                // Overlay katmanını yeniden derle
-                const overlay = cardElement.querySelector('.card-tags-overlay');
-                if (overlay) {
-                    if (trimmedTags) {
-                        overlay.style.display = 'flex';
-                        overlay.innerHTML = trimmedTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
-                    } else {
-                        overlay.style.display = 'none';
-                        overlay.innerHTML = '';
-                    }
+                const footer = cardElement.querySelector('.card-footer');
+                if (footer) {
+                    footer.innerHTML = trimmedTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
                 }
             }
         }
 
         function loadMoreBatch() {
             const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
-            const adminDisplay = isAdminActive ? 'block' : 'none';
+            const adminDisplay = isAdminActive ? 'flex' : 'none';
             
             addLog(`Galeri akışına yeni grup ekleniyor. Sayı: ${nextBatch.length}`, 'info');
 
@@ -1214,24 +1180,18 @@
                 card.className = 'media-card';
                 card.setAttribute('data-id', item.id);
 
-                // Eğer etiket yoksa overlay katmanını ilk başta gizliyoruz
-                const hasTagsStyle = currentTags.trim() ? 'display: flex;' : 'display: none;';
-
                 card.innerHTML = `
                     <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
                     <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
-                    
                     <div class="img-container">
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
-                        
-                        <div class="card-tags-overlay" style="${isAdminActive ? 'display:none;' : hasTagsStyle}">
-                            ${tagsHtml}
-                        </div>
                     </div>
                     
                     <div class="admin-tag-edit-area" style="display: ${adminDisplay}">
                         <input type="text" class="admin-tag-input" placeholder="Etiketleri düzenle (virgülle ayır)" value="${currentTags}">
                     </div>
+
+                    <div class="card-footer">${tagsHtml}</div>
                 `;
 
                 card.addEventListener('click', (e) => {
