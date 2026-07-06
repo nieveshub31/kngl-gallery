@@ -383,18 +383,19 @@
     </div>
 
     <script>
-        // --- 1. CONFIG ---
-        const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
-        
-        let supabase = null;
-        try {
-            if (window.supabase && SUPABASE_URL !== 'SENIN_SUPABASE_URL_BURAYA') {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            }
-        } catch(e) {
-            console.error("Supabase yüklenemedi:", e);
-        }
+        // --- 1. CONFIG (SADECE BURAYI DEĞİŞTİR) ---
+const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co'; // Kendi URL'ni buraya yapıştır
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY'; // Kendi Anon Key'ini buraya yapıştır
+
+// --- GERİ KALANINA DOKUNMANA GEREK YOK ---
+let supabase = null;
+try {
+    if (window.supabase && SUPABASE_URL && !SUPABASE_URL.includes('SENIN_SUPABASE_URL_BURAYA')) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+} catch(e) {
+    console.error("Supabase yüklenemedi:", e);
+}
 
         // Element Tanımlamaları
         const galleryGrid = document.getElementById('galleryGrid');
