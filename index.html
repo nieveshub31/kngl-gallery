@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KNGLRP | Media Gallery Pro</title>
-    <!-- Supabase Kütüphanesi -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -72,12 +71,6 @@
             display: flex;
             align-items: center;
             gap: 12px;
-        }
-
-        .user-email {
-            font-size: 13px;
-            color: var(--text-gray);
-            font-weight: 600;
         }
 
         /* --- Buton Stilleri --- */
@@ -199,12 +192,10 @@
 </head>
 <body>
 
-    <!-- Üst Kontrol Paneli -->
     <div class="top-bar">
         <input type="text" id="searchInput" class="search-box" placeholder="Etiketlerde arama yapın (örn: car, lspd, y2k)...">
         
         <div class="user-info-zone">
-            <span id="userEmailDisplay" class="user-email"></span>
             <button class="btn btn-auth" id="loginBtn" onclick="document.getElementById('authModal').style.display='grid'">Giriş Yap</button>
             <button class="btn btn-auth" id="logoutBtn" style="display:none;" onclick="handleLogout()">Çıkış Yap</button>
         </div>
@@ -214,25 +205,20 @@
         <button class="btn btn-primary" id="addMediaBtn" style="display: none;" onclick="document.getElementById('uploadModal').style.display='grid'">Görsel Ekle</button>
     </div>
 
-    <!-- Galeri Izgarası -->
     <main id="galleryGrid" class="gallery-grid"></main>
     <div id="loading" style="text-align:center; padding:30px; display:none; color: var(--text-gray); font-weight: bold;">Daha fazla içerik senkronize ediliyor...</div>
 
-    <!-- Oturum Açma / Kayıt Modalı -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" onclick="document.getElementById('authModal').style.display='none'">&times;</button>
-            <h3 style="margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px;" id="authModalTitle">Hesabına Giriş Yap</h3>
+            <h3 style="margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px;">Sistem Giriş Şifresi</h3>
             
-            <input type="email" id="authEmail" placeholder="E-posta Adresi">
-            <input type="password" id="authPassword" placeholder="Şifre">
+            <input type="password" id="authPassword" placeholder="Giriş Şifresini Yazın">
             
-            <button id="authPrimaryBtn" class="btn btn-primary" style="width:100%; margin-top:15px; justify-content: center;" onclick="handleAuthAction()">Giriş Yap</button>
-            <p style="text-align:center; font-size:12px; color:var(--text-gray); margin-top:15px; cursor:pointer;" id="authToggleText" onclick="toggleAuthMode()">Hesabın yok mu? Kayıt Ol</p>
+            <button id="authPrimaryBtn" class="btn btn-primary" style="width:100%; margin-top:15px; justify-content: center;" onclick="handlePasswordAuth()">Sisteme Giriş Yap</button>
         </div>
     </div>
 
-    <!-- Komple Donanımlı Medya Yükleme Modalı -->
     <div id="uploadModal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" onclick="document.getElementById('uploadModal').style.display='none'">&times;</button>
@@ -246,7 +232,6 @@
             
             <input type="text" id="tagInput" placeholder="Sistem etiketleri girin (örn: lspd, customs)">
             
-            <!-- Giriş Yapmadan Görünmesin Seçeneği -->
             <div class="switch-container">
                 <span style="font-size: 13px; color: var(--text-white); font-weight: 600;">Giriş yapmadan gözükmesin</span>
                 <label class="switch">
@@ -259,17 +244,15 @@
         </div>
     </div>
 
-    <!-- Canlı Terminal Log Konsolu -->
     <div id="logger"></div>
 
-    <!-- Kesin Kararlı JavaScript Motoru -->
     <script>
         // ==========================================
         // 1. SUPABASE CONFIG & GLOBAL VARIABLES
         // ==========================================
         const SUPABASE_URL = 'SENIN_SUPABASE_URL'; 
         const SUPABASE_KEY = 'SENIN_ANON_KEY';
-        const ADMIN_EMAIL = 'SENIN_ADMIN_EMAIL_ADRESIN'; 
+        const ACCESS_PASSWORD = 'cc1312'; // Sadece bu şifreyi girenler admin olur ve gizli resimleri görür.
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -278,8 +261,7 @@
         let displayedCount = 0;  
         const itemsPerScroll = 20; 
         let isAdminActive = false; 
-        let currentUser = null;
-        let isSignUpMode = false;
+        let isLoggedIn = false;
 
         const galleryGrid = document.getElementById('galleryGrid');
         const loadingIdx = document.getElementById('loading');
@@ -322,48 +304,52 @@
 
             logger.appendChild(logRow);
             logger.scrollTop = logger.scrollHeight;
+        }
 
-            if (logger.children.length > 100) {
-                logger.removeChild(logger.firstChild);
+        // Sayfa Yüklenirken Oturum Kontrolü yap
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('gallery_session') === 'active') {
+                updateLoginState(true);
+            } else {
+                updateLoginState(false);
+            }
+        });
+
+        // ==========================================
+        // 3. TEK ŞİFRELİ GİRİŞ SİSTEMİ VE UI YÖNETİMİ
+        // ==========================================
+        function handlePasswordAuth() {
+            const inputPass = document.getElementById('authPassword').value;
+
+            if (inputPass === ACCESS_PASSWORD) {
+                localStorage.setItem('gallery_session', 'active');
+                updateLoginState(true);
+                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('authPassword').value = '';
+                addLog('Doğru şifre girildi. Yönetici hakları ve gizli arşiv açıldı.', 'success');
+            } else {
+                alert('Hatalı Şifre girdiniz!');
+                addLog('Hatalı şifre denemesi yapıldı.', 'error');
             }
         }
 
-        // ==========================================
-        // 3. AUTHENTICATION (OTURUM YÖNETİMİ)
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Mevcut oturumu denetle
-            const { data: { session } } = await supabase.auth.getSession();
-            checkUserStatus(session?.user || null);
+        function handleLogout() {
+            localStorage.removeItem('gallery_session');
+            updateLoginState(false);
+            addLog('Oturum kapatıldı, gizli arşiv kilitlendi.', 'warning');
+        }
 
-            // Oturum durum değişikliklerini dinle
-            supabase.auth.onAuthStateChange((_event, session) => {
-                checkUserStatus(session?.user || null);
-            });
-        });
-
-        function checkUserStatus(user) {
-            currentUser = user;
-            const userEmailDisplay = document.getElementById('userEmailDisplay');
+        function updateLoginState(loggedIn) {
+            isLoggedIn = loggedIn;
             const loginBtn = document.getElementById('loginBtn');
             const logoutBtn = document.getElementById('logoutBtn');
 
-            if (user) {
-                userEmailDisplay.textContent = user.email;
+            if (loggedIn) {
                 loginBtn.style.display = 'none';
                 logoutBtn.style.display = 'block';
+                adminToggleBtn.style.display = 'block';
                 addMediaBtn.style.display = 'block';
-
-                // Giriş yapan hesap Admin mi?
-                if (user.email === ADMIN_EMAIL) {
-                    adminToggleBtn.style.display = 'block';
-                    addLog(`Yönetici hesabı tanımlandı: ${user.email}`, 'warning');
-                } else {
-                    adminToggleBtn.style.display = 'none';
-                    disableAdminUI();
-                }
             } else {
-                userEmailDisplay.textContent = '';
                 loginBtn.style.display = 'block';
                 logoutBtn.style.display = 'none';
                 adminToggleBtn.style.display = 'none';
@@ -372,42 +358,6 @@
             }
 
             fetchInitialData();
-        }
-
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            document.getElementById('authModalTitle').textContent = isSignUpMode ? "Yeni Hesap Oluştur" : "Hesabına Giriş Yap";
-            document.getElementById('authPrimaryBtn').textContent = isSignUpMode ? "Kayıt Ol" : "Giriş Yap";
-            document.getElementById('authToggleText').textContent = isSignUpMode ? "Zaten hesabın var mı? Giriş Yap" : "Hesabın yok mu? Kayıt Ol";
-        }
-
-        async function handleAuthAction() {
-            const email = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value;
-
-            if (!email || !password) return alert('Lütfen tüm alanları doldurun.');
-
-            if (isSignUpMode) {
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) addLog('Kayıt hatası: ' + error.message, 'error');
-                else {
-                    addLog('Kayıt başarılı! E-posta onay linkini kontrol edin veya giriş yapın.', 'success');
-                    alert('Hesap oluşturuldu, giriş yapabilirsiniz.');
-                    toggleAuthMode();
-                }
-            } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) addLog('Giriş hatası: ' + error.message, 'error');
-                else {
-                    addLog('Oturum başarıyla açıldı.', 'success');
-                    document.getElementById('authModal').style.display = 'none';
-                }
-            }
-        }
-
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            addLog('Oturum kapatıldı.', 'warning');
         }
 
         function disableAdminUI() {
@@ -436,8 +386,8 @@
 
             let rawData = data || [];
 
-            // GÜVENLİK AYARI: Giriş yapılmadıysa require_auth: true olanları filtrele
-            if (!currentUser) {
+            // GÜVENLİK AYARI: Giriş yapılmadıysa require_auth: true olanları gizle
+            if (!isLoggedIn) {
                 allGalleryData = rawData.filter(item => item.require_auth !== true);
             } else {
                 allGalleryData = rawData;
@@ -447,7 +397,7 @@
             galleryGrid.innerHTML = '';
             displayedCount = 0;
             loadMoreBatch();
-            addLog(`${filteredData.length} adet medya başarıyla listelendi.`, 'success');
+            addLog(`${filteredData.length} adet aktif görsel listelendi.`, 'success');
         }
 
         function loadMoreBatch() {
@@ -537,7 +487,7 @@
                 const files = fileInput.files;
 
                 if (!tags) return alert('Lütfen en az bir etiket girin.');
-                if (links.length === 0 && files.length === 0) return alert('Yüklenecek medya kaynağı bulunamadı.');
+                if (links.length === 0 && files.length === 0) return alert('Yüklenecek kaynak bulunamadı.');
                 
                 document.getElementById('uploadModal').style.display = 'none';
                 addLog(`Kuyruk işleniyor... [Giriş Şartı Koruma Modu: ${requireAuth ? 'AKTİF' : 'PASİF'}]`, 'upload');
@@ -584,7 +534,7 @@
         // ==========================================
         if(adminToggleBtn) {
             adminToggleBtn.onclick = () => {
-                if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+                if (!isLoggedIn) return;
                 
                 isAdminActive = !isAdminActive;
                 adminToggleBtn.textContent = isAdminActive ? "Admin Modu: AKTİF" : "Admin Modu: KAPALI";
