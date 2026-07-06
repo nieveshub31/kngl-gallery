@@ -483,27 +483,37 @@
         }
 
         .delete-card-btn {
-            position: absolute;
-            top: 12px; right: 12px;
-            background-color: rgba(255, 74, 74, 0.9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            width: 34px;
-            height: 34px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            z-index: 10;
-        }
-        .delete-card-btn:hover {
-            background-color: var(--danger-red);
-            transform: scale(1.1);
-        }
+    position: absolute;
+    top: 12px; 
+    right: 12px;
+    background-color: rgba(255, 74, 74, 0.95);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    
+    /* Flex yapısını koruyoruz, ama hizalamayı aşağıda değiştiriyoruz */
+    display: flex;
+    align-items: center;    /* Dikey hizalama */
+    justify-content: center; /* Yatay hizalama */
+    
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 15; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    pointer-events: auto;
+    padding: 0;
+}
+
+.delete-card-btn::before {
+    content: "×"; 
+    font-size: 21px;
+    font-weight: bold;
+    /* Dikey konumlandırmayı Flex'in üzerine manuel bir küçük düzeltme ile ekliyoruz */
+    position: relative;
+    top: -2px; /* BURAYI DEĞİŞTİR: -1px, -2px, -3px yaparak tam istediğin yere oturt */
+}
 
         .card-select-checkbox {
             position: absolute;
@@ -659,8 +669,8 @@
                 <select id="sortSelect">
                     <option value="newest">En Yeni Önce</option>
                     <option value="oldest">En Eski Önce</option>
-                    <option value="alpha-asc">A -> Z (Etiket)</option>
-                    <option value="alpha-desc">Z -> A (Etiket)</option>
+                    <option value="alpha-asc">A -> Z (Etiketli Başa)</option>
+                    <option value="alpha-desc">Z -> A (Etiketli Başa)</option>
                 </select>
 
                 <button id="deleteSelectedBtn" class="btn-danger" style="display: none;">Seçilenleri Sil (0)</button>
@@ -713,7 +723,7 @@
                 
                 <div class="form-right">
                     <div class="divider-text">Doğrudan Link (Çoklu Giriş Aktif)</div>
-                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
+                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırebilir veya alt satıra geçebilirsiniz."></textarea>
                     
                     <div class="divider-text">Ortak Etiket Tanımı</div>
                     <input type="text" id="tagInput" placeholder="Genel Etiketler (İsteğe bağlı, virgülle ayırın: lspd, car)">
@@ -1139,10 +1149,24 @@
                 filteredData.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
             } else if (sortOrder === 'oldest') {
                 filteredData.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
-            } else if (sortOrder === 'alpha-asc') {
-                filteredData.sort((a, b) => (a.tags || '').localeCompare(b.tags || '', 'tr'));
-            } else if (sortOrder === 'alpha-desc') {
-                filteredData.sort((a, b) => (b.tags || '').localeCompare(b.tags || '', 'tr'));
+            } else if (sortOrder === 'alpha-asc' || sortOrder === 'alpha-desc') {
+                // ALFABETİK SIRALAMA: ETİKETSİZLERİ SONA ATMA MOTORU
+                filteredData.sort((a, b) => {
+                    const tagA = (a.tags || '').trim();
+                    const tagB = (b.tags || '').trim();
+
+                    // İkisi de boşsa veya ikisi de doluysa normal sırala
+                    if (!tagA && !tagB) return 0;
+                    if (!tagA) return 1;  // a boşsa b önce gelsin (a sona gitsin)
+                    if (!tagB) return -1; // b boşsa a önce gelsin (b sona gitsin)
+
+                    // İkisi de doluysa seçilen yöne göre alfabetik sırala
+                    if (sortOrder === 'alpha-asc') {
+                        return tagA.localeCompare(tagB, 'tr');
+                    } else {
+                        return tagB.localeCompare(tagA, 'tr');
+                    }
+                });
             }
 
             refreshGalleryUI();
@@ -1219,16 +1243,18 @@
 
                 card.innerHTML = `
                     <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
-                    <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
+                    <button class="delete-card-btn" data-id="${item.id}"></button>
                     
                     <div class="img-container">
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
                         
+                        <!-- Resim Üzerindeki Tag Katmanı (Normal Kullanıcı) -->
                         <div class="card-tags-overlay" style="${isAdminActive ? 'display:none;' : hasTagsStyle}">
                             ${tagsHtml}
                         </div>
                     </div>
                     
+                    <!-- Resim Üzerindeki Input Alanı (Admin Modu) -->
                     <div class="admin-tag-edit-area" style="display: ${adminDisplay}">
                         <input type="text" class="admin-tag-input" placeholder="Etiketleri düzenle (virgülle ayır)" value="${currentTags}">
                     </div>
