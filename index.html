@@ -1002,162 +1002,65 @@
 
         fetchImages();
 
-let displayedCount = 0; // Şu an ekranda kaç görsel var?
-const itemsPerScroll = 20; // Her seferde kaç tane yüklenecek?
-let allGalleryData = [];
-let filteredData = [];
-
-// 1. Veriyi çek
-async function fetchGalleryData() {
-    const { data } = await supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
-    allGalleryData = data || [];
-    filteredData = [...allGalleryData];
-    loadMore(); // İlk 20 taneyi yükle
-}
-
-// 2. Görselleri parça parça yükle
-function loadMore() {
-    const galleryGrid = document.getElementById('galleryGrid');
-    const loading = document.getElementById('loading');
-    
-    // Yükleme sınırını belirle
-    const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
-    
-    nextBatch.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'media-card';
-        card.innerHTML = `<img src="${item.image_url}" style="width:100%; height:200px; object-fit:cover; border-radius:8px;">`;
-        galleryGrid.appendChild(card);
-    });
-
-    displayedCount += nextBatch.length;
-    loading.style.display = 'none';
-}
-
-// 3. Scroll Takibi (Aşağı indikçe yükle)
-window.onscroll = () => {
-    // Sayfanın en altına yaklaştık mı?
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-        if (displayedCount < filteredData.length) {
-            document.getElementById('loading').style.display = 'block';
-            loadMore();
-        }
-    }
-};
-
-// Arama yapıldığında listeyi sıfırla
-document.getElementById('searchInput').addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    filteredData = allGalleryData.filter(item => item.tags.toLowerCase().includes(term));
-    displayedCount = 0;
-    document.getElementById('galleryGrid').innerHTML = '';
-    loadMore();
-});
-
-fetchGalleryData();
-
-// ========================================================
-// SİLME VE SEÇME ALANI (SAYFANIN EN ALTINA, SCRIPT BITIMINDEN HEMEN ÖNCEYE YAPIŞTIR)
-// ========================================================
-
-function loadMoreBatch() {
-    const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
-    
-    if(nextBatch.length === 0 && displayedCount === 0) {
-        galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray); padding:40px;">Görsel bulunamadı.</p>';
-        return;
+// ==========================================
+    // 3. ADMIN MODU VE TOPLU SİLME TETİKLEYİCİLERİ
+    // ==========================================
+    if(adminToggleBtn) {
+        adminToggleBtn.onclick = () => {
+            isAdminActive = !isAdminActive;
+            adminToggleBtn.textContent = isAdminActive ? "Admin Modu: AKTİF" : "Admin Modu: KAPALI";
+            adminToggleBtn.classList.toggle('active', isAdminActive);
+            syncAdminUIWithCards();
+            updateBulkDeleteButtonUI();
+        };
     }
 
-    nextBatch.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'media-card';
-        card.setAttribute('data-id', item.id);
-
-        card.innerHTML = `
-            <input type="checkbox" class="card-checkbox" value="${item.id}" style="display: ${isAdminActive ? 'block' : 'none'}">
-            <img src="${item.image_url}" loading="lazy">
-        `;
-
-        // Kart Tıklama Olayı (Admin modunda resmi açmaz, checkbox'ı seçer)
-        card.addEventListener('click', (e) => {
-            const checkbox = card.querySelector('.card-checkbox');
-            
-            if (isAdminActive) {
-                e.preventDefault();
-                if (e.target !== checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                }
-                card.classList.toggle('selected', checkbox.checked);
-                updateBulkDeleteButtonUI();
-            } else {
-                window.open(item.image_url, '_blank');
+    function syncAdminUIWithCards() {
+        const checkboxes = document.querySelectorAll('.card-checkbox');
+        checkboxes.forEach(cb => {
+            cb.style.display = isAdminActive ? 'block' : 'none';
+            if (!isAdminActive) {
+                cb.checked = false;
+                cb.closest('.media-card').classList.remove('selected');
             }
         });
-
-        // Checkbox'ın kendi tıklama olayı (Çakışmayı önler)
-        card.querySelector('.card-checkbox').addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            card.classList.toggle('selected', e.target.checked);
-            updateBulkDeleteButtonUI();
-        });
-
-        galleryGrid.appendChild(card);
-    });
-
-    displayedCount += nextBatch.length;
-    if(loadingIdx) loadingIdx.style.display = 'none';
-}
-
-function syncAdminUIWithCards() {
-    const checkboxes = document.querySelectorAll('.card-checkbox');
-    checkboxes.forEach(cb => {
-        cb.style.display = isAdminActive ? 'block' : 'none';
-        if (!isAdminActive) {
-            cb.checked = false;
-            cb.closest('.media-card').classList.remove('selected');
-        }
-    });
-}
-
-function updateBulkDeleteButtonUI() {
-    const selectedCount = document.querySelectorAll('.card-checkbox:checked').length;
-    if(bulkDeleteBtn) {
-        bulkDeleteBtn.textContent = `Seçilenleri Sil (${selectedCount})`;
-        bulkDeleteBtn.style.display = (isAdminActive && selectedCount > 0) ? 'block' : 'none';
     }
-}
 
-// Toplu Silme Buton Aksiyonu
-if(bulkDeleteBtn) {
-    bulkDeleteBtn.onclick = async () => {
-        const checkedBoxes = document.querySelectorAll('.card-checkbox:checked');
-        if(checkedBoxes.length === 0) return;
-
-        if(!confirm(`Seçtiğiniz ${checkedBoxes.length} adet görseli silmek istiyor musunuz?`)) return;
-
-        const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
-        if(typeof addLog === 'function') addLog(`${idsToDelete.length} adet görsel kaldırılıyor...`, 'info');
-
-        const { error } = await supabase.from('gallery_images').delete().in('id', idsToDelete);
-
-        if(error) {
-            if(typeof addLog === 'function') addLog(`Hata: ${error.message}`, 'error');
-        } else {
-            if(typeof addLog === 'function') addLog('Görseller başarıyla silindi.', 'success');
-            
-            idsToDelete.forEach(id => {
-                const cardToRemove = document.querySelector(`.media-card[data-id="${id}"]`);
-                if (cardToRemove) cardToRemove.remove();
-            });
-            
-            allGalleryData = allGalleryData.filter(item => !idsToDelete.includes(item.id.toString()));
-            filteredData = filteredData.filter(item => !idsToDelete.includes(item.id.toString()));
-            displayedCount -= idsToDelete.length;
-            
-            updateBulkDeleteButtonUI();
+    function updateBulkDeleteButtonUI() {
+        const selectedCount = document.querySelectorAll('.card-checkbox:checked').length;
+        if(bulkDeleteBtn) {
+            bulkDeleteBtn.textContent = `Seçilenleri Sil (${selectedCount})`;
+            bulkDeleteBtn.style.display = (isAdminActive && selectedCount > 0) ? 'block' : 'none';
         }
-    };
-}
+    }
+
+    if(bulkDeleteBtn) {
+        bulkDeleteBtn.onclick = async () => {
+            const checkedBoxes = document.querySelectorAll('.card-checkbox:checked');
+            if(checkedBoxes.length === 0) return;
+
+            if(!confirm(`Seçtiğiniz ${checkedBoxes.length} adet görseli silmek istiyor musunuz?`)) return;
+
+            const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
+            addLog(`${idsToDelete.length} adet görsel kaldırılıyor...`, 'info');
+
+            const { error } = await supabase.from('gallery_images').delete().in('id', idsToDelete);
+
+            if(error) {
+                addLog(`Hata: ${error.message}`, 'error');
+            } else {
+                addLog('Görseller başarıyla silindi.', 'success');
+                idsToDelete.forEach(id => {
+                    const cardToRemove = document.querySelector(`.media-card[data-id="${id}"]`);
+                    if (cardToRemove) cardToRemove.remove();
+                });
+                allGalleryData = allGalleryData.filter(item => !idsToDelete.includes(item.id.toString()));
+                filteredData = filteredData.filter(item => !idsToDelete.includes(item.id.toString()));
+                displayedCount -= idsToDelete.length;
+                updateBulkDeleteButtonUI();
+            }
+        };
+    }
         
     </script>
 </body>
