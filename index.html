@@ -261,7 +261,7 @@
         }
         .modal-close-btn:hover { color: white; }
 
-        /* --- GALERİ GRID VE KARTLAR --- */
+        /* --- GALERİ GRID --- */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -319,7 +319,7 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* --- TEKLİ SİLME BUTONU --- */
+        /* --- SİLME BUTONU --- */
         .delete-card-btn {
             position: absolute;
             top: 12px; right: 12px;
@@ -408,24 +408,23 @@
 
     <script>
         // ==========================================
-        // 1. SUPABASE CONFIGURATION
+        // 1. SUPABASE AYARLARI (İsim çakışması engellendi)
         // ==========================================
-        const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
+        const MY_SUPABASE_TARGET_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co';
+        const MY_SUPABASE_TARGET_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
         
-        let supabase = null;
+        let knglSupaClient = null; 
         let isAdminActive = false; 
 
-        // Supabase bağlantısını tamamen izole ediyoruz, hata verse bile script akışı bozulmaz
         try {
-            if (window.supabase && SUPABASE_URL && SUPABASE_URL.startsWith('http')) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            if (window.supabase && MY_SUPABASE_TARGET_URL && MY_SUPABASE_TARGET_URL.startsWith('http')) {
+                knglSupaClient = window.supabase.createClient(MY_SUPABASE_TARGET_URL, MY_SUPABASE_TARGET_KEY);
             }
         } catch(e) {
-            console.error("Supabase Client Error:", e);
+            console.error("Supabase yükleme pas geçildi:", e);
         }
 
-        // Elementler
+        // DOM Elementleri
         const galleryGrid = document.getElementById('galleryGrid');
         const searchInput = document.getElementById('searchInput');
         const uploadSection = document.getElementById('uploadSection');
@@ -444,10 +443,8 @@
         let selectedFile = null;
 
         // ==========================================
-        // 2. MODAL & INTERFACE LOGIC (ZIRHLI KATMAN)
+        // 2. MODAL & PANEL AÇILIŞ MANTIĞI
         // ==========================================
-        
-        // Şifre sorma paneli açılışı (Supabase çalışmasa bile bu tetiklenir)
         if (mainActionBtn) {
             mainActionBtn.addEventListener('click', function() {
                 if (isAdminActive) {
@@ -460,11 +457,10 @@
             });
         }
 
-        // Kapatma tetikleyicileri
         if (closeModalBtn) closeModalBtn.addEventListener('click', () => passwordModal.style.display = 'none');
         window.addEventListener('click', (e) => { if (e.target === passwordModal) passwordModal.style.display = 'none'; });
 
-        // Şifre Kontrolü ve Yönetici Girişi
+        // Şifre Giriş Kontrolü
         if (loginBtn) {
             loginBtn.addEventListener('click', function() {
                 if (passwordInput && passwordInput.value === 'nieves1312') {
@@ -474,7 +470,6 @@
                     if (mainActionBtn) mainActionBtn.style.display = 'none';
                     if (uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth' });
                     
-                    // Görseller üzerindeki silme butonlarını aç
                     document.querySelectorAll('.delete-card-btn').forEach(btn => btn.style.display = 'flex');
                 } else {
                     if (loginError) loginError.style.display = 'block';
@@ -482,32 +477,31 @@
             });
         }
 
-        // Yönetici Modundan Güvenli Çıkış
+        // Yönetici Modunu Kapatma
         if (closeAdminBtn) {
             closeAdminBtn.addEventListener('click', function() {
                 isAdminActive = false;
                 if (uploadSection) uploadSection.style.display = 'none';
                 if (mainActionBtn) mainActionBtn.style.display = 'inline-flex';
                 
-                // Silme butonlarını tamamen gizle
                 document.querySelectorAll('.delete-card-btn').forEach(btn => btn.style.display = 'none');
             });
         }
 
         // ==========================================
-        // 3. DATABASE: FETCH & DISPLAY IMAGES
+        // 3. RESİMLERİ VERİTABANINDAN ÇEKME
         // ==========================================
         async function fetchImages(searchQuery = '') {
             if (!galleryGrid) return;
             galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Medyalar senkronize ediliyor...</p>';
             
-            if (!supabase) {
-                galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--danger-red);">Supabase baglantısı kurulamadı. Lütfen koddaki URL ve Key alanlarını kontrol edin!</p>';
+            if (!knglSupaClient) {
+                galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray);">Supabase veritabanı ayarları henüz girilmemiş.</p>';
                 return;
             }
 
             try {
-                let query = supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
+                let query = knglSupaClient.from('gallery_images').select('*').order('created_at', { ascending: false });
                 
                 if (searchQuery) {
                     query = query.ilike('tags', `%${searchQuery}%`);
@@ -515,7 +509,7 @@
 
                 const { data, error } = await query;
                 if (error) {
-                    galleryGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--danger-red);">Veritabanı Hatası: ${error.message}</p>`;
+                    galleryGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--danger-red);">Hata: ${error.message}</p>`;
                     return;
                 }
 
@@ -545,7 +539,7 @@
                     galleryGrid.appendChild(card);
                 });
             } catch (err) {
-                galleryGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--danger-red);">Sistemsel Çağrı Hatası: ${err.message}</p>`;
+                galleryGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--danger-red);">Sistem Hatası: ${err.message}</p>`;
             }
         }
 
@@ -554,31 +548,28 @@
         }
 
         // ==========================================
-        // 4. DATABASE: DELETE OPERATIONS
+        // 4. RESİM SİLME İŞLEMLERİ
         // ==========================================
-        
-        // Tekli Resim Silme İşlemi
         window.deleteSingleImage = async function(id) {
-            if (!confirm('Bu görseli sunucudan kalıcı olarak silmek istiyor musunuz?')) return;
+            if (!confirm('Bu görseli galeriden kalıcı olarak silmek istediğinize emin misiniz?')) return;
             try {
-                const { error } = await supabase.from('gallery_images').delete().eq('id', id);
-                if (error) alert('Silme başarısız: ' + error.message);
+                const { error } = await knglSupaClient.from('gallery_images').delete().eq('id', id);
+                if (error) alert('Silme hatası: ' + error.message);
                 else fetchImages();
             } catch (err) {
-                alert('Silme hatası: ' + err.message);
+                alert('Silme esnasında hata oluştu: ' + err.message);
             }
         };
 
-        // Toplu Veritabanı Temizleme
         if (deleteAllBtn) {
             deleteAllBtn.addEventListener('click', async function() {
-                if (!confirm('DİKKAT: Galerideki TÜM resimler kalıcı olarak silinecek! Onaylıyor musunuz?')) return;
+                if (!confirm('DİKKAT: Galerideki TÜM resimler kalıcı olarak silinecek!')) return;
                 if (!confirm('Son onay: Tabloyu tamamen sıfırlamak istediğinize emin misiniz?')) return;
 
                 try {
-                    const { error } = await supabase.from('gallery_images').delete().gt('id', 0);
+                    const { error } = await knglSupaClient.from('gallery_images').delete().gt('id', 0);
                     if (error) alert('Toplu silme hatası: ' + error.message);
-                    else { alert('Galeri başarıyla sıfırlandı.'); fetchImages(); }
+                    else { alert('Galeri tamamen temizlendi.'); fetchImages(); }
                 } catch (err) {
                     alert('Beklenmedik Hata: ' + err.message);
                 }
@@ -586,7 +577,7 @@
         }
 
         // ==========================================
-        // 5. STORAGE & UPLOAD MANAGEMENT
+        // 5. MEDYA YÜKLEME VE KART OLUŞTURMA
         // ==========================================
         if (dropZone) {
             dropZone.addEventListener('click', () => fileInput && fileInput.click());
@@ -623,9 +614,9 @@
                 const tags = document.getElementById('tagInput').value;
                 const statusText = document.getElementById('uploadStatus');
                 
-                if (!supabase) return alert('Veritabanı aktif değil.');
-                if (!tags) return alert('Lütfen arama etiketlerini doldurun.');
-                if (!selectedFile && !linkInput) return alert('Dosya seçin ya da URL linki girin.');
+                if (!knglSupaClient) return alert('Veritabanı bağlantısı yok.');
+                if (!tags) return alert('Lütfen etiketleri (tag) girin.');
+                if (!selectedFile && !linkInput) return alert('Dosya yükleyin veya bir URL adresi girin.');
 
                 statusText.style.color = 'var(--text-white)';
                 statusText.innerText = "Bulut sunucusuna işleniyor...";
@@ -637,7 +628,7 @@
                         const fileExt = selectedFile.name.split('.').pop();
                         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                         
-                        const { error: uploadError } = await supabase.storage
+                        const { error: uploadError } = await knglSupaClient.storage
                             .from('gallery')
                             .upload(fileName, selectedFile);
                             
@@ -647,20 +638,20 @@
                             return;
                         }
 
-                        const { data } = supabase.storage.from('gallery').getPublicUrl(fileName);
+                        const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
                         finalImageUrl = data.publicUrl;
                     }
 
-                    const { error: dbError } = await supabase.from('gallery_images').insert([
+                    const { error: dbError } = await knglSupaClient.from('gallery_images').insert([
                         { image_url: finalImageUrl, tags: tags }
                     ]);
 
                     if (dbError) {
                         statusText.style.color = 'var(--danger-red)';
-                        statusText.innerText = 'Database Hatası: ' + dbError.message;
+                        statusText.innerText = 'Database Kayıt Hatası: ' + dbError.message;
                     } else {
                         statusText.style.color = 'var(--accent-green)';
-                        statusText.innerText = 'Medya başarıyla yüklendi!';
+                        statusText.innerText = 'Medya başarıyla sisteme yüklendi!';
                         
                         document.getElementById('linkInput').value = '';
                         document.getElementById('tagInput').value = '';
@@ -676,7 +667,7 @@
                     }
                 } catch (err) {
                     statusText.style.color = 'var(--danger-red)';
-                    statusText.innerText = 'Sistem Hatası: ' + err.message;
+                    statusText.innerText = 'Hata: ' + err.message;
                 }
             });
         }
