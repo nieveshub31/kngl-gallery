@@ -21,6 +21,8 @@
             --text-gray: #8f9cae;
             --border-color: #1f2433;
             --danger-red: #ff4a4a;
+            --log-warn: #ffb86c;
+            --log-storage: #8be9fd;
         }
 
         * {
@@ -443,34 +445,35 @@
             object-fit: contain;
         }
 
-        /* --- AÇILIR/KAPANIR LOG PANELİ --- */
+        /* --- DETAYLI LOG PANELİ (Girişte Kapalı) --- */
         .live-logger-panel {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 360px;
-            background-color: rgba(11, 13, 20, 0.95);
+            width: 380px;
+            background-color: rgba(9, 10, 15, 0.97);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
             z-index: 1000;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
+        /* Başlangıçta Kapalı Durması İçin */
         .live-logger-panel.collapsed {
-            width: 220px;
+            width: 200px;
         }
 
         .logger-header {
             background-color: var(--bg-card);
-            padding: 12px 14px;
+            padding: 14px 16px;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-gray);
             display: flex;
@@ -481,23 +484,26 @@
         }
 
         .logger-toggle-btn {
-            font-size: 14px;
-            color: var(--text-gray);
+            font-size: 12px;
+            color: var(--accent-green);
             font-weight: bold;
+            background: rgba(0, 255, 135, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
         }
 
         .logger-body {
-            padding: 12px;
+            padding: 14px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
             overflow-y: auto;
-            max-height: 180px;
-            min-height: 120px;
+            max-height: 220px;
+            min-height: 140px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             scroll-behavior: smooth;
-            transition: max-height 0.3s ease, padding 0.3s ease;
+            transition: max-height 0.3s ease, padding 0.3s ease, min-height 0.3s ease;
         }
 
         .live-logger-panel.collapsed .logger-body {
@@ -509,12 +515,25 @@
         }
 
         .log-line {
-            line-height: 1.4;
+            line-height: 1.5;
             word-break: break-all;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(31, 36, 51, 0.3);
+            display: flex;
+            flex-direction: column;
         }
+        
+        .log-meta {
+            font-size: 9px;
+            color: #4e566d;
+            margin-bottom: 2px;
+        }
+
         .log-line.success { color: var(--accent-green); }
         .log-line.error { color: var(--danger-red); font-weight: bold; }
         .log-line.info { color: #50fa7b; }
+        .log-line.warn { color: var(--log-warn); }
+        .log-line.storage { color: var(--log-storage); }
 
         @media (max-width: 768px) {
             .upload-grid { grid-template-columns: 1fr; }
@@ -592,14 +611,12 @@
         </div>
     </div>
 
-    <div class="live-logger-panel" id="liveLoggerPanel">
+    <div class="live-logger-panel collapsed" id="liveLoggerPanel">
         <div class="logger-header" id="loggerHeader">
             <span>Sistem Log Paneli</span>
-            <span class="logger-toggle-btn" id="loggerToggleBtn">[-]</span>
+            <span class="logger-toggle-btn" id="loggerToggleBtn">[+]</span>
         </div>
-        <div class="logger-body" id="loggerBody">
-            <div class="log-line info">[Sistem] Galeri paneli başlatıldı. Bağlantı aranıyor...</div>
-        </div>
+        <div class="logger-body" id="loggerBody"></div>
     </div>
 
     <script>
@@ -613,32 +630,49 @@
         let isAdminActive = false; 
         let selectedFilesQueue = []; 
         
-        // Sonsuz Kaydırma / Filtreleme Değişkenleri
         let allGalleryData = []; 
         let filteredData = [];   
         let displayedCount = 0;  
         const itemsPerScroll = 20; 
 
+        // DETAYLANDIRILMIŞ VE GELİŞTİRİLMİŞ LOG FONKSİYONU
         function addLog(text, type = 'info') {
             const loggerBody = document.getElementById('loggerBody');
             if (!loggerBody) return;
+            
             const time = new Date().toLocaleTimeString();
             const logLine = document.createElement('div');
             logLine.className = `log-line ${type}`;
-            logLine.innerText = `[${time}] ${text}`;
+            
+            let prefix = '⚙️ [BİLGİ]';
+            switch(type) {
+                case 'success': prefix = '✅ [BAŞARILI]'; break;
+                case 'error': prefix = '❌ [KRİTİK HATA]'; break;
+                case 'warn': prefix = '⚠️ [UYARI]'; break;
+                case 'storage': prefix = '📦 [DEPOLAMA]'; break;
+            }
+
+            logLine.innerHTML = `
+                <span class="log-meta">${time} - ${prefix}</span>
+                <span>${text}</span>
+            `;
+            
             loggerBody.appendChild(logLine);
             loggerBody.scrollTop = loggerBody.scrollHeight;
         }
 
+        // Başlangıç Loglarını Gönder
+        addLog('Galeri çekirdek motoru ve arayüz yükleniyor...', 'info');
+
         try {
             if (window.supabase && MY_SUPABASE_TARGET_URL && MY_SUPABASE_TARGET_URL.startsWith('http')) {
                 knglSupaClient = window.supabase.createClient(MY_SUPABASE_TARGET_URL, MY_SUPABASE_TARGET_KEY);
-                addLog('Supabase bağlantısı başarıyla sağlandı.', 'success');
+                addLog('Supabase REST API & Storage ağ bağlantısı kararlı.', 'success');
             } else {
-                addLog('HATA: Koddaki Supabase URL veya Key alanları tanımsız!', 'error');
+                addLog('Kritik kimlik hatası: Supabase URL veya Key algılanamadı!', 'error');
             }
         } catch(e) {
-            addLog('Bağlantı esnasında kritik hata: ' + e.message, 'error');
+            addLog('Bağlantı esnasında API el sıkışma hatası: ' + e.message, 'error');
         }
 
         // DOM Elementleri
@@ -677,16 +711,18 @@
         if (sessionStorage.getItem('kngl_admin_session') === 'true') {
             isAdminActive = true;
             if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
-            addLog('Mevcut oturum algılandı. Admin yetkileri yenilendi.', 'success');
+            addLog('Aktif admin oturum anahtarı (session) doğrulandı. Yetkiler açık.', 'success');
         }
 
         // ==========================================
-        // 2. LOG PANELİ KAPATMA
+        // 2. LOG PANELİ KONTROLÜ (Tıklayınca Açılır/Kapanır)
         // ==========================================
         if (loggerHeader) {
             loggerHeader.addEventListener('click', function() {
                 liveLoggerPanel.classList.toggle('collapsed');
-                loggerToggleBtn.innerText = liveLoggerPanel.classList.contains('collapsed') ? '[+]' : '[-]';
+                const isCollapsed = liveLoggerPanel.classList.contains('collapsed');
+                loggerToggleBtn.innerText = isCollapsed ? '[+]' : '[-]';
+                addLog(`Log paneli görünümü değiştirildi: ${isCollapsed ? 'Gizlendi' : 'Genişletildi'}`, 'info');
             });
         }
 
@@ -697,6 +733,7 @@
             if (!url) return;
             lightboxImg.src = url;
             lightboxOverlay.style.display = 'flex';
+            addLog(`Medya tam ekran modunda açıldı: ${url.substring(0, 45)}...`, 'info');
         };
         if (closeLightboxBtn) closeLightboxBtn.addEventListener('click', () => lightboxOverlay.style.display = 'none');
         if (lightboxOverlay) {
@@ -710,10 +747,12 @@
             mainActionBtn.addEventListener('click', function() {
                 if (isAdminActive) {
                     uploadModal.style.display = 'flex';
+                    addLog('Medya yönetim paneli arayüze çağrıldı.', 'info');
                 } else {
                     if (loginError) loginError.style.display = 'none';
                     if (passwordInput) { passwordInput.value = ''; passwordInput.focus(); }
                     passwordModal.style.display = 'flex';
+                    addLog('Güvenli bölge tetiklendi, şifre doğrulaması bekleniyor.', 'warn');
                 }
             });
         }
@@ -733,11 +772,11 @@
                     passwordModal.style.display = 'none';
                     uploadModal.style.display = 'flex';
                     if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
-                    addLog('Yönetici kimliği doğrulandı.', 'success');
+                    addLog('Sistem giriş anahtarı eşleşti! Yönetici hakları teslim edildi.', 'success');
                     refreshGalleryUI(); 
                 } else {
                     if (loginError) loginError.style.display = 'block';
-                    addLog('Hatalı şifre denemesi!', 'error');
+                    addLog('Giriş Reddedildi: Yanlış şifre kombinasyonu girildi.', 'error');
                 }
             });
         }
@@ -750,7 +789,7 @@
                 uploadModal.style.display = 'none';
                 if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
                 refreshGalleryUI();
-                addLog('Yönetici oturumu kapatıldı.', 'info');
+                addLog('Yönetici oturum anahtarları imha edildi, güvenli moda geçildi.', 'warn');
             });
         }
 
@@ -758,20 +797,24 @@
         // 5. STORAGE'DAN SİLME FONKSİYONU
         // ==========================================
         async function removeFileFromStorage(imageUrl) {
-            if (!imageUrl || !imageUrl.includes('/storage/v1/object/public/gallery/')) return true;
+            if (!imageUrl || !imageUrl.includes('/storage/v1/object/public/gallery/')) {
+                addLog('Harici URL algılandı, storage üzerinden dosya silme adımı atlandı.', 'info');
+                return true;
+            }
             try {
                 const fileName = imageUrl.split('/gallery/').pop();
                 if (!fileName) return false;
 
+                addLog(`Bulut deposundan dosya kaldırma talebi gönderildi: ${fileName}`, 'storage');
                 const { error } = await knglSupaClient.storage.from('gallery').remove([fileName]);
                 if (error) {
                     addLog(`Storage dosya silinemedi (${fileName}): ` + error.message, 'error');
                     return false;
                 }
-                addLog(`Asıl dosya depodan temizlendi: ${fileName}`, 'success');
+                addLog(`Fiziksel dosya bulut depolama alanından tamamen temizlendi.`, 'success');
                 return true;
             } catch (err) {
-                addLog('Storage entegrasyon hatası: ' + err.message, 'error');
+                addLog('Depolama entegrasyonu hatası: ' + err.message, 'error');
                 return false;
             }
         }
@@ -780,8 +823,13 @@
         // 6. ÇOKLU MEDYA SEÇİMİ (YÜKLEME ÖNİZLEME)
         // ==========================================
         function handleFilesSelection(files) {
+            addLog(`Kuyruğa yeni yerel dosyalar eklendi. Sayı: ${files.length}`, 'info');
             for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('image/')) selectedFilesQueue.push(files[i]);
+                if (files[i].type.startsWith('image/')) {
+                    selectedFilesQueue.push(files[i]);
+                } else {
+                    addLog(`Geçersiz format elendi: ${files[i].name}`, 'warn');
+                }
             }
             renderPreviews();
         }
@@ -804,7 +852,9 @@
                     item.querySelector('img').addEventListener('click', () => openLightbox(e.target.result));
                     item.querySelector('.remove-preview-btn').addEventListener('click', function(ev) {
                         ev.stopPropagation();
-                        selectedFilesQueue.splice(parseInt(this.getAttribute('data-index')), 1);
+                        const removedIndex = parseInt(this.getAttribute('data-index'));
+                        addLog(`Dosya yükleme sırasından çıkarıldı: ${selectedFilesQueue[removedIndex].name}`, 'info');
+                        selectedFilesQueue.splice(removedIndex, 1);
                         renderPreviews();
                     });
                     previewContainer.appendChild(item);
@@ -838,31 +888,37 @@
                 if (selectedFilesQueue.length === 0 && !linkInput) return alert('Dosya seçin veya bir link girin.');
 
                 statusText.style.color = 'var(--text-white)';
-                statusText.innerText = "Yükleniyor...";
+                statusText.innerText = "Kuyruk işleniyor, lütfen bekleyin...";
+                addLog('Toplu yükleme algoritması başlatıldı...', 'info');
 
                 if (linkInput && selectedFilesQueue.length === 0) {
+                    addLog(`Doğrudan URL indeksleme isteği gönderiliyor: ${linkInput.substring(0, 30)}...`, 'info');
                     const { error } = await knglSupaClient.from('gallery_images').insert([{ image_url: linkInput, tags: tags }]);
-                    if (error) addLog('Hata: ' + error.message, 'error');
-                    else { addLog('URL başarıyla eklendi.', 'success'); fetchGalleryData(); }
+                    if (error) addLog('Veritabanı kayıt hatası: ' + error.message, 'error');
+                    else { addLog('Uzak URL kaydı başarıyla tamamlandı.', 'success'); fetchGalleryData(); }
                     document.getElementById('linkInput').value = '';
                     statusText.innerText = '';
                     return;
                 }
 
+                addLog(`Toplam ${selectedFilesQueue.length} adet dosya sırayla buluta yüklenecek.`, 'storage');
                 for (let i = 0; i < selectedFilesQueue.length; i++) {
                     const file = selectedFilesQueue[i];
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                     
+                    addLog(`Aktarılıyor (${i+1}/${selectedFilesQueue.length}): ${file.name} (${Math.round(file.size/1024)} KB)`, 'storage');
                     const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
-                    if (upErr) { addLog('Depolama hatası: ' + upErr.message, 'error'); continue; }
+                    if (upErr) { addLog(`Depolama hatası oluştu (${file.name}): ` + upErr.message, 'error'); continue; }
 
                     const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
+                    addLog(`Dosya yüklendi, veritabanı kaydı açılıyor...`, 'info');
                     await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
                 }
 
                 statusText.style.color = 'var(--accent-green)';
                 statusText.innerText = 'Tüm medyalar yüklendi!';
+                addLog('Kuyruktaki tüm işlemler başarıyla tamamlandı, galeri yenileniyor.', 'success');
                 selectedFilesQueue = [];
                 renderPreviews();
                 document.getElementById('tagInput').value = '';
@@ -876,6 +932,7 @@
         // ==========================================
         async function fetchGalleryData() {
             if (!galleryGrid || !knglSupaClient) return;
+            addLog('Veritabanı tabloları senkronize ediliyor...', 'info');
             
             try {
                 const { data, error } = await knglSupaClient
@@ -884,7 +941,7 @@
                     .order('created_at', { ascending: false });
 
                 if (error) { 
-                    addLog('Veri çekilemedi: ' + error.message, 'error'); 
+                    addLog('Veri çekme işlemi başarısız: ' + error.message, 'error'); 
                     return; 
                 }
 
@@ -892,9 +949,9 @@
                 filteredData = [...allGalleryData];
                 
                 refreshGalleryUI();
-                addLog(`${allGalleryData.length} adet görsel sistemden senkronize edildi.`, 'success');
+                addLog(`Toplam ${allGalleryData.length} medya nesnesi başarıyla senkronize edildi.`, 'success');
             } catch (err) { 
-                addLog('Hata: ' + err.message, 'error'); 
+                addLog('Beklenmedik API hatası: ' + err.message, 'error'); 
             }
         }
 
@@ -920,6 +977,8 @@
         function loadMoreBatch() {
             const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
             const adminDisplay = isAdminActive ? 'flex' : 'none';
+            
+            addLog(`Galeri akışına yeni grup ekleniyor. Sayı: ${nextBatch.length}`, 'info');
 
             nextBatch.forEach(item => {
                 const tagsHtml = (item.tags || '').split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
@@ -936,7 +995,6 @@
                     <div class="card-footer">${tagsHtml}</div>
                 `;
 
-                // Tıklama Yönetimi (Kart tıklaması Lightbox açar veya Seçim yapar)
                 card.addEventListener('click', (e) => {
                     const checkbox = card.querySelector('.card-select-checkbox');
                     const deleteBtn = card.querySelector('.delete-card-btn');
@@ -952,13 +1010,11 @@
                     }
                 });
 
-                // Checkbox doğrudan tıklama olayı
                 card.querySelector('.card-select-checkbox').addEventListener('click', (e) => {
                     card.classList.toggle('selected', e.target.checked);
                     updateSelectedCount();
                 });
 
-                // Tekil Silme Olayı
                 card.querySelector('.delete-card-btn').addEventListener('click', async function(e) {
                     if (!confirm('Bu görseli kalıcı olarak silmek istiyor musunuz?')) return;
                     
@@ -969,11 +1025,12 @@
                         await removeFileFromStorage(targetItem.image_url);
                     }
 
+                    addLog(`ID:${id} için veritabanı satırı siliniyor...`, 'info');
                     const { error: delErr } = await knglSupaClient.from('gallery_images').delete().eq('id', id);
                     if (delErr) {
                         addLog('Silme Hatası: ' + delErr.message, 'error');
                     } else { 
-                        addLog('Görsel başarıyla kaldırıldı.', 'success'); 
+                        addLog(`ID:${id} nolu kayıt veritabanından düşürüldü.`, 'success'); 
                         card.remove();
                         allGalleryData = allGalleryData.filter(x => x.id != id);
                         filteredData = filteredData.filter(x => x.id != id);
@@ -990,20 +1047,20 @@
             updateSelectedCount();
         }
 
-        // Sonsuz Scroll Takibi
         window.onscroll = () => {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
                 if (displayedCount < filteredData.length && loadingIdx && loadingIdx.style.display !== 'block') {
                     loadingIdx.style.display = 'block';
+                    addLog('Sonsuz kaydırma tetiklendi, yeni veriler talep ediliyor...', 'info');
                     loadMoreBatch();
                 }
             }
         };
 
-        // Gerçek Zamanlı Arama
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
+                addLog(`Canlı arama filtresi uygulandı: "${term}"`, 'info');
                 filteredData = allGalleryData.filter(item => 
                     item.tags && item.tags.toLowerCase().includes(term)
                 );
@@ -1030,7 +1087,7 @@
                 if (checkedBoxes.length === 0) return alert('Lütfen silmek istediğiniz görselleri kartların üzerine tıklayarak seçin.');
                 if (!confirm(`Seçtiğiniz ${checkedBoxes.length} adet görseli depodan ve galeriden kalıcı olarak silmek istediğinize emin misiniz?`)) return;
 
-                addLog('Seçilen ögeler için toplu silme döngüsü başladı...', 'info');
+                addLog(`Toplu imha döngüsü başladı. Adet: ${checkedBoxes.length}`, 'warn');
                 
                 for (let box of checkedBoxes) {
                     const id = box.getAttribute('data-id');
@@ -1041,7 +1098,7 @@
                     await knglSupaClient.from('gallery_images').delete().eq('id', id);
                 }
 
-                addLog('Seçili ögelerin toplu silme işlemi tamamlandı.', 'success');
+                addLog('Toplu silme algoritması bitirildi.', 'success');
                 fetchGalleryData();
             });
         }
@@ -1051,7 +1108,7 @@
                 if (!confirm('DİKKAT: Galerideki TÜM resimler ve bulut deposundaki asıl dosyalar kalıcı olarak silinecek!')) return;
                 if (!confirm('Son onayınız mı?')) return;
 
-                addLog('Tüm galeri verileri ve depolama alanı temizleniyor...', 'info');
+                addLog('KRİTİK TALEP: Tüm galeri veritabanı ve depolama havuzu boşaltılıyor!', 'warn');
 
                 for (let item of allGalleryData) {
                     await removeFileFromStorage(item.image_url);
@@ -1059,9 +1116,9 @@
 
                 const { error } = await knglSupaClient.from('gallery_images').delete().gt('id', 0);
                 if (error) {
-                    addLog('Tablo temizleme hatası: ' + error.message, 'error');
+                    addLog('Tablo sıfırlama hatası: ' + error.message, 'error');
                 } else {
-                    addLog('Veritabanı ve bulut deposu tamamen sıfırlandı.', 'success');
+                    addLog('Veritabanı tablosu ve bulut bütünüyle temizlendi. Tertemiz!', 'success');
                     uploadModal.style.display = 'none';
                     fetchGalleryData();
                 }
