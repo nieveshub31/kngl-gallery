@@ -547,9 +547,8 @@
             </div>
         </header>
 
-        <main id="galleryGrid" class="gallery-grid">
-            </main>
-    </div>
+        <main id="galleryGrid" class="gallery-grid"></main>
+<div id="loading" style="text-align:center; padding:20px; display:none;">Yükleniyor...</div>
 
     <div id="passwordModal" class="modal-overlay">
         <div class="modal-content">
@@ -1003,83 +1002,59 @@
 
         fetchImages();
 
-let currentPage = 1;
-const itemsPerPage = 50; // Her sayfada 50 görsel
-let allGalleryData = []; // Tüm görseller burada duracak (Hafıza)
-let filteredData = [];   // Arama sonuçları burada duracak
+let displayedCount = 0; // Şu an ekranda kaç görsel var?
+const itemsPerScroll = 20; // Her seferde kaç tane yüklenecek?
+let allGalleryData = [];
+let filteredData = [];
 
-// 1. Sayfa yüklendiğinde veriyi 1 KERE çek
-document.addEventListener('DOMContentLoaded', async () => {
-    const { data, error } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error("Veri hatası:", error);
-        return;
-    }
-
+// 1. Veriyi çek
+async function fetchGalleryData() {
+    const { data } = await supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
     allGalleryData = data || [];
     filteredData = [...allGalleryData];
-    renderGallery(); // İlk görünümü oluştur
-});
+    loadMore(); // İlk 20 taneyi yükle
+}
 
-// 2. Arama motoru
-document.getElementById('searchInput').addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    filteredData = allGalleryData.filter(item => 
-        (item.tags && item.tags.toLowerCase().includes(term))
-    );
-    currentPage = 1; // Arama yapınca 1. sayfaya dön
-    renderGallery();
-});
-
-// 3. Galeriyi Ekrana Basma
-function renderGallery() {
+// 2. Görselleri parça parça yükle
+function loadMore() {
     const galleryGrid = document.getElementById('galleryGrid');
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageItems = filteredData.slice(start, end); // Sadece o sayfanın verisi
-
-    galleryGrid.innerHTML = pageItems.length ? '' : '<p>Görsel bulunamadı.</p>';
+    const loading = document.getElementById('loading');
     
-    pageItems.forEach(item => {
+    // Yükleme sınırını belirle
+    const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
+    
+    nextBatch.forEach(item => {
         const card = document.createElement('div');
         card.className = 'media-card';
-        card.innerHTML = `<img src="${item.image_url}" style="width:100%; height:150px; object-fit:cover; border-radius:8px;">`;
+        card.innerHTML = `<img src="${item.image_url}" style="width:100%; height:200px; object-fit:cover; border-radius:8px;">`;
         galleryGrid.appendChild(card);
     });
 
-    renderPagination();
+    displayedCount += nextBatch.length;
+    loading.style.display = 'none';
 }
 
-// 4. Sayfa Butonlarını Çiz
-function renderPagination() {
-    let pagContainer = document.getElementById('paginationArea');
-    if (!pagContainer) {
-        pagContainer = document.createElement('div');
-        pagContainer.id = 'paginationArea';
-        pagContainer.className = 'pagination-area';
-        document.getElementById('galleryGrid').after(pagContainer);
+// 3. Scroll Takibi (Aşağı indikçe yükle)
+window.onscroll = () => {
+    // Sayfanın en altına yaklaştık mı?
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        if (displayedCount < filteredData.length) {
+            document.getElementById('loading').style.display = 'block';
+            loadMore();
+        }
     }
+};
 
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(-1)">Önceki</button>`;
-    
-    // Sayfa numaraları (1, 2, 3...)
-    for(let i = 1; i <= totalPages; i++) {
-        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-    }
-    
-    html += `<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="changePage(1)">Sonraki</button>`;
-    pagContainer.innerHTML = html;
-}
+// Arama yapıldığında listeyi sıfırla
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    filteredData = allGalleryData.filter(item => item.tags.toLowerCase().includes(term));
+    displayedCount = 0;
+    document.getElementById('galleryGrid').innerHTML = '';
+    loadMore();
+});
 
-// 5. Sayfa Değiştirme
-function changePage(dir) { currentPage += dir; renderGallery(); window.scrollTo(0, 0); }
-function goToPage(p) { currentPage = p; renderGallery(); window.scrollTo(0, 0); }
-        
+fetchGalleryData();
     </script>
 </body>
 </html>
