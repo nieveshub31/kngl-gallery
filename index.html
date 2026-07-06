@@ -882,6 +882,67 @@
             });
         }
 
+
+let currentPage = 1;
+const itemsPerPage = 20;
+
+async function renderGallery() {
+    const galleryGrid = document.getElementById('galleryGrid');
+    
+    // Geçiş efekti (Sayfa değişirken önce yok et)
+    galleryGrid.style.opacity = 0;
+
+    setTimeout(async () => {
+        // Supabase'den veriyi çek
+        const { data } = await supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
+        
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginatedData = data.slice(start, start + itemsPerPage);
+
+        galleryGrid.innerHTML = '';
+        paginatedData.forEach(item => {
+            galleryGrid.innerHTML += `
+                <div class="media-card">
+                    <img src="${item.image_url}" style="width:100%; height:auto; border-radius:8px;">
+                </div>
+            `;
+        });
+
+        // Efekti geri getir
+        galleryGrid.style.opacity = 1;
+        renderPagination(data.length);
+    }, 400); // CSS süresiyle uyumlu
+}
+
+function renderPagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const container = document.getElementById('paginationArea') || createPaginationContainer();
+    
+    container.innerHTML = `
+        <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(-1)">Önceki</button>
+        <span style="align-self:center;">Sayfa ${currentPage} / ${totalPages}</span>
+        <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(1)">Sonraki</button>
+    `;
+}
+
+function changePage(dir) {
+    currentPage += dir;
+    renderGallery();
+}
+
+function createPaginationContainer() {
+    const div = document.createElement('div');
+    div.id = 'paginationArea';
+    div.className = 'pagination-area';
+    document.body.appendChild(div);
+    return div;
+}
+
+// Başlangıçta çalıştır
+renderGallery();
+
+
+        
         // ==========================================
         // 8. GALERİ VERİLERİNİ ÇEKME & CHECKBOX DÜZENİ
         // ==========================================
