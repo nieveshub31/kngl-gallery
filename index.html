@@ -459,28 +459,38 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .delete-card-btn {
-            position: absolute;
-            top: 12px; right: 12px;
-            background-color: rgba(255, 74, 74, 0.9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            width: 36px;
-            height: 36px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            z-index: 10;
-        }
-        .delete-card-btn:hover {
-            background-color: var(--danger-red);
-            transform: scale(1.1);
-        }
+       .delete-card-btn {
+    position: absolute;
+    top: 12px; 
+    right: 12px;
+    background-color: rgba(255, 74, 74, 0.95);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    
+    /* Flex yapısını koruyoruz, ama hizalamayı aşağıda değiştiriyoruz */
+    display: flex;
+    align-items: center;    /* Dikey hizalama */
+    justify-content: center; /* Yatay hizalama */
+    
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 15; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    pointer-events: auto;
+    padding: 0;
+}
+
+.delete-card-btn::before {
+    content: "×"; 
+    font-size: 21px;
+    font-weight: bold;
+    /* Dikey konumlandırmayı Flex'in üzerine manuel bir küçük düzeltme ile ekliyoruz */
+    position: relative;
+    top: -2px; /* BURAYI DEĞİŞTİR: -1px, -2px, -3px yaparak tam istediğin yere oturt */
+}
 
         .card-select-checkbox {
             position: absolute;
