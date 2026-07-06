@@ -401,7 +401,7 @@
             -webkit-user-drag: none;
             display: flex;
             flex-direction: column;
-            height: 260px; /* Sabit yükseklik ile tam uyum */
+            height: 260px; 
         }
 
         .media-card:hover {
@@ -415,7 +415,7 @@
             overflow: hidden;
             background-color: var(--bg-darker);
             pointer-events: none;
-            position: relative;
+            position: relative; /* İçindeki butonların tam köşeye hizalanmasını garanti eder */
         }
 
         .img-container img {
@@ -441,7 +441,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            pointer-events: none; /* Kart tıklamasını engellememesi için */
+            pointer-events: none; 
             z-index: 5;
         }
 
@@ -482,7 +482,7 @@
             border-color: var(--accent-green);
         }
 
-        /* SILME BUTONU GÜNCELLEMESI */
+        /* SILME BUTONU KÖŞEYE SABİTLENDİ */
         .delete-card-btn {
             position: absolute;
             top: 12px; 
@@ -500,18 +500,21 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
-            z-index: 15; /* Diğer tüm kart elementlerinin en üstüne alındı */
+            z-index: 15; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
             line-height: 1;
+            pointer-events: auto; /* Tıklanabilir olmasını sağlar */
         }
         .delete-card-btn:hover {
             background-color: var(--danger-red);
             transform: scale(1.1);
         }
 
+        /* SEÇİM KUTUSU DA RESMİN SOL ÜSTÜNE SABİTLENDİ */
         .card-select-checkbox {
             position: absolute;
-            top: 16px; left: 16px;
+            top: 12px; 
+            left: 12px;
             width: 22px;
             height: 22px;
             accent-color: var(--accent-green);
@@ -519,6 +522,7 @@
             display: none;
             z-index: 12;
             border-radius: 6px;
+            pointer-events: auto;
         }
 
         .media-card.selected {
@@ -1144,17 +1148,14 @@
             } else if (sortOrder === 'oldest') {
                 filteredData.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
             } else if (sortOrder === 'alpha-asc' || sortOrder === 'alpha-desc') {
-                // ALFABETİK SIRALAMA: ETİKETSİZLERİ SONA ATMA MOTORU
                 filteredData.sort((a, b) => {
                     const tagA = (a.tags || '').trim();
                     const tagB = (b.tags || '').trim();
 
-                    // İkisi de boşsa veya ikisi de doluysa normal sırala
                     if (!tagA && !tagB) return 0;
-                    if (!tagA) return 1;  // a boşsa b önce gelsin (a sona gitsin)
-                    if (!tagB) return -1; // b boşsa a önce gelsin (b sona gitsin)
+                    if (!tagA) return 1;  
+                    if (!tagB) return -1; 
 
-                    // İkisi de doluysa seçilen yöne göre alfabetik sırala
                     if (sortOrder === 'alpha-asc') {
                         return tagA.localeCompare(tagB, 'tr');
                     } else {
@@ -1204,7 +1205,6 @@
                 const targetObj = allGalleryData.find(x => x.id == id);
                 if (targetObj) targetObj.tags = trimmedTags;
                 
-                // Overlay katmanını yeniden derle
                 const overlay = cardElement.querySelector('.card-tags-overlay');
                 if (overlay) {
                     if (trimmedTags) {
@@ -1232,14 +1232,14 @@
                 card.className = 'media-card';
                 card.setAttribute('data-id', item.id);
 
-                // Eğer etiket yoksa overlay katmanını ilk başta gizliyoruz
                 const hasTagsStyle = currentTags.trim() ? 'display: flex;' : 'display: none;';
 
+                // DÜZELTME: Butonlar ve seçim kutusu kaymaması için doğrudan .img-container içine gömüldü
                 card.innerHTML = `
-                    <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
-                    <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
-                    
                     <div class="img-container">
+                        <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
+                        <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}">&times;</button>
+                        
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
                         
                         <!-- Resim Üzerindeki Tag Katmanı (Normal Kullanıcı) -->
