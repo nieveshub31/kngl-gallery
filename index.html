@@ -992,6 +992,103 @@
 
         fetchImages();
 
+let currentPage = 1;
+const itemsPerPage = 50;
+let allGalleryData = [];
+let filteredData = [];
+
+// Sayfa tamamen yüklendiğinde çalıştır
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchGalleryData();
+    setupSearch();
+});
+
+async function fetchGalleryData() {
+    const { data, error } = await supabase
+        .from('gallery_images')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Veri çekme hatası:", error);
+        return;
+    }
+    
+    allGalleryData = data || [];
+    filteredData = [...allGalleryData];
+    renderGallery();
+}
+
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            filteredData = allGalleryData.filter(item => 
+                (item.tags && item.tags.toLowerCase().includes(term))
+            );
+            currentPage = 1;
+            renderGallery();
+        });
+    }
+}
+
+function renderGallery() {
+    const galleryGrid = document.getElementById('galleryGrid');
+    if (!galleryGrid) return;
+
+    // Sayfalama hesaplama
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedData = filteredData.slice(start, end);
+
+    // Grid'i temizle ve çiz
+    galleryGrid.innerHTML = paginatedData.length ? '' : '<p style="grid-column:1/-1; text-align:center;">Görsel bulunamadı.</p>';
+    
+    paginatedData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.innerHTML = `<img src="${item.image_url}" style="width:100%; height:150px; object-fit:cover; border-radius:8px;">`;
+        galleryGrid.appendChild(card);
+    });
+
+    renderPagination();
+}
+
+function renderPagination() {
+    let pagContainer = document.getElementById('paginationArea');
+    if (!pagContainer) {
+        pagContainer = document.createElement('div');
+        pagContainer.id = 'paginationArea';
+        pagContainer.className = 'pagination-area';
+        document.getElementById('galleryGrid').after(pagContainer);
+    }
+
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    
+    let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(-1)">Önceki</button>`;
+    
+    // Sayfa numaralarını ekle
+    for(let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    }
+    
+    html += `<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="changePage(1)">Sonraki</button>`;
+    pagContainer.innerHTML = html;
+}
+
+function changePage(dir) { 
+    currentPage += dir; 
+    renderGallery(); 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+}
+
+function goToPage(p) { 
+    currentPage = p; 
+    renderGallery(); 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+}
+        
     </script>
 </body>
 </html>
