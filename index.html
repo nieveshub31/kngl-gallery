@@ -29,7 +29,7 @@
         .btn-admin { background: #171a24; color: white; border: 1px solid var(--border-color); }
         .btn-admin.active { background: #ffaa00; color: black; }
 
-        /* 5'li Grid Düzeni */
+        /* 5'li Grid Düzeni (Aşağı indikçe sütun sütun yüklenecek) */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -49,15 +49,15 @@
         .media-card:hover { transform: translateY(-3px); }
         .media-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
         
-        /* Seçim Arayüzü */
-        .card-checkbox { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; display: none; z-index: 10; }
+        /* Seçim ve Checkbox Alanı */
+        .card-checkbox { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; display: none; z-index: 10; cursor: pointer; }
         .media-card.selected { border-color: #ffaa00; box-shadow: 0 0 10px rgba(255,170,0,0.3); }
 
-        /* Modal Tasarımı */
+        /* Modal Tasarımları */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; place-items: center; z-index: 9999; }
         .modal-content { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 450px; border: 1px solid var(--border-color); position: relative; }
         
-        /* Daire Çarpı Butonu */
+        /* İstediğin Yuvarlak Çarpı Butonu */
         .modal-close-btn { 
             position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; 
             border-radius: 50%; border: 1px solid var(--border-color); background: #171a24;
@@ -69,7 +69,16 @@
         textarea, .modal-content input { width: 100%; padding: 12px; margin: 8px 0; background: #171a24; border: 1px solid var(--border-color); color: white; border-radius: 8px; }
         textarea { height: 100px; resize: none; }
 
-        /* Sağ Alt Canlı Geliştirici Konsolu */
+        /* Özel İstenen Giriş Yapmadan Görünmesin Ayarı Switch Tasarımı */
+        .switch-container { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; padding: 5px 0; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #171a24; border: 1px solid var(--border-color); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Sağ Alt Detaylı Canlı Geliştirici Konsolu */
         #logger {
             position: fixed;
             bottom: 20px;
@@ -88,13 +97,13 @@
             backdrop-filter: blur(8px);
         }
 
-        /* Log Türlerinin Renkleri */
-        .log-info { color: #00ffff; }       /* Turkuaz */
-        .log-success { color: #00ff87; }    /* Neon Yeşil */
-        .log-error { color: #ff4a4a; }      /* Canlı Kırmızı */
-        .log-upload { color: #ffaa00; }     /* Turuncu */
-        .log-delete { color: #ff00ff; }     /* Pembe/Mor */
-        .log-warning { color: #ffff00; }    /* Sarı */
+        /* Log Türlerinin Özel Renkleri */
+        .log-info { color: #00ffff; }       
+        .log-success { color: #00ff87; }    
+        .log-error { color: #ff4a4a; }      
+        .log-upload { color: #ffaa00; }     
+        .log-delete { color: #ff00ff; }     
+        .log-warning { color: #ffff00; }    
 
         #logger::-webkit-scrollbar { width: 6px; }
         #logger::-webkit-scrollbar-track { background: #050508; }
@@ -125,6 +134,15 @@
             <textarea id="linkArea" placeholder="https://site.com/resim1.jpg&#10;https://site.com/resim2.png"></textarea>
             
             <input type="text" id="tagInput" placeholder="Etiketler (örn: car, lspd)">
+            
+            <div class="switch-container">
+                <span style="font-size: 13px; color: var(--text-white);">Giriş yapmadan gözükmesin</span>
+                <label class="switch">
+                    <input type="checkbox" id="requireAuthCheck">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <button id="startUploadBtn" class="btn btn-primary" style="width:100%; margin-top:10px;">Yüklemeyi Başlat</button>
         </div>
     </div>
@@ -152,7 +170,7 @@
         const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
 
         // ==========================================
-        // 2. GELİŞMİŞ LOG SİSTEMİ
+        // 2. DETAYLI TERMİNAL LOG FONKSİYONU
         // ==========================================
         function addLog(msg, type = 'info') {
             if (!logger) return;
@@ -191,7 +209,7 @@
             }
         }
 
-        // İlk Yükleme
+        // Sayfa İlk Açıldığında Verileri Getirme
         document.addEventListener('DOMContentLoaded', fetchInitialData);
 
         async function fetchInitialData() {
@@ -203,7 +221,7 @@
                 .order('created_at', { ascending: false });
 
             if (error) {
-                addLog('Veritabanı hatası: ' + error.message, 'error');
+                addLog('Veritabanı bağlantı hatası: ' + error.message, 'error');
                 return;
             }
 
@@ -213,11 +231,11 @@
             galleryGrid.innerHTML = '';
             displayedCount = 0;
             loadMoreBatch();
-            addLog(`${allGalleryData.length} adet görsel başarıyla yüklendi.`, 'success');
+            addLog(`${allGalleryData.length} adet medya havuzdan başarıyla senkronize edildi.`, 'success');
         }
 
         // ==========================================
-        // 3. SEÇME, LİSTELEME VE SİLME MANTIĞI
+        // 3. SÜTUN SÜTUN YÜKLEME VE SEÇME MANTIĞI
         // ==========================================
         function loadMoreBatch() {
             const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
@@ -237,11 +255,12 @@
                     <img src="${item.image_url}" loading="lazy">
                 `;
 
-                // Kart Tıklama (Admin modunda resmi açmaz, direkt seçer)
+                // Tıklama Yönetimi (İstediğin net ayrım)
                 card.addEventListener('click', (e) => {
                     const checkbox = card.querySelector('.card-checkbox');
                     
                     if (isAdminActive) {
+                        // Admin Modundaysa: Resmi büyük açmaz, tıklandığı gibi seçer
                         e.preventDefault();
                         if (e.target !== checkbox) {
                             checkbox.checked = !checkbox.checked;
@@ -249,6 +268,7 @@
                         card.classList.toggle('selected', checkbox.checked);
                         updateBulkDeleteButtonUI();
                     } else {
+                        // Normal Kullanıcı: Resmi yeni sekmede tam ekran açar
                         window.open(item.image_url, '_blank');
                     }
                 });
@@ -270,7 +290,7 @@
             if(loadingIdx) loadingIdx.style.display = 'none';
         }
 
-        // Sonsuz Kaydırma Kontrolü
+        // Sonsuz Kaydırma Kontrolü (Aşağı kaydırdıkça tetiklenir)
         window.onscroll = () => {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 400) {
                 if (displayedCount < filteredData.length && loadingIdx && loadingIdx.style.display !== 'block') {
@@ -280,7 +300,7 @@
             }
         };
 
-        // Arama Motoru
+        // Gelişmiş Filtreleme / Arama Motoru
         const searchInp = document.getElementById('searchInput');
         if(searchInp) {
             searchInp.addEventListener('input', (e) => {
@@ -295,7 +315,7 @@
         }
 
         // ==========================================
-        // 4. ÇOKLU MEDYA EKLEME MANTIĞI
+        // 4. ÇOKLU EKLEME VE ÖZEL AYAR KAYDI
         // ==========================================
         const upBtn = document.getElementById('startUploadBtn');
         if(upBtn) {
@@ -303,44 +323,60 @@
                 const fileInput = document.getElementById('fileInput');
                 const linkArea = document.getElementById('linkArea');
                 const tagInput = document.getElementById('tagInput');
+                const requireAuth = document.getElementById('requireAuthCheck').checked; // Giriş yapmadan gözükmesin değeri
 
                 const tags = tagInput.value.trim();
                 const links = linkArea.value.split('\n').filter(l => l.trim() !== '');
                 const files = fileInput.files;
 
                 if (!tags) return alert('Lütfen en az bir etiket girin.');
+                if (links.length === 0 && files.length === 0) return alert('Yüklenecek dosya veya link girilmedi.');
                 
                 document.getElementById('uploadModal').style.display = 'none';
-                addLog(`Yükleme ve kayıt kuyruğu işlenmeye başladı...`, 'upload');
+                addLog(`Kuyruk işleniyor... (Giriş Şartı: ${requireAuth ? 'EVET' : 'HAYIR'})`, 'upload');
 
+                // 1. Çoklu Link İşleme
                 for (let url of links) {
-                    const { error } = await supabase.from('gallery_images').insert([{ image_url: url.trim(), tags: tags }]);
+                    const { error } = await supabase.from('gallery_images').insert([{ 
+                        image_url: url.trim(), 
+                        tags: tags,
+                        require_auth: requireAuth  // Tablondaki auth alanına göre kaydeder
+                    }]);
                     if (error) addLog(`Link kayıt hatası: ${error.message}`, 'error');
-                    else addLog(`Link başarıyla sisteme eklendi: ${url.substring(0,25)}...`, 'success');
+                    else addLog(`Link havuzuna eklendi: ${url.substring(0,25)}...`, 'success');
                 }
 
+                // 2. Çoklu Dosya İşleme (Storage -> Database)
                 for (let file of files) {
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                     const { error: upErr } = await supabase.storage.from('gallery').upload(fileName, file);
                     
                     if (upErr) {
-                        addLog(`Depolama/Storage Hatası (${file.name}): ${upErr.message}`, 'error');
+                        addLog(`Storage Hatası (${file.name}): ${upErr.message}`, 'error');
                     } else {
                         const { data } = supabase.storage.from('gallery').getPublicUrl(fileName);
-                        await supabase.from('gallery_images').insert([{ image_url: data.publicUrl, tags: tags }]);
-                        addLog(`Dosya başarıyla yüklendi: ${file.name}`, 'success');
+                        await supabase.from('gallery_images').insert([{ 
+                            image_url: data.publicUrl, 
+                            tags: tags,
+                            require_auth: requireAuth 
+                        }]);
+                        addLog(`Dosya başarıyla yüklendi ve ilişkilendirildi: ${file.name}`, 'success');
                     }
                 }
+                
+                // Formları sıfırla
                 if(fileInput) fileInput.value = ''; 
                 if(linkArea) linkArea.value = ''; 
                 if(tagInput) tagInput.value = '';
+                document.getElementById('requireAuthCheck').checked = false;
+                
                 await fetchInitialData();
             };
         }
 
         // ==========================================
-        // 5. ADMIN KONTROLLERİ VE TOPLU SİLME
+        // 5. TOPLU SİLME VE TERMİNAL ENTEGRASYONU
         // ==========================================
         if(adminToggleBtn) {
             adminToggleBtn.onclick = () => {
@@ -349,7 +385,7 @@
                 adminToggleBtn.classList.toggle('active', isAdminActive);
                 syncAdminUIWithCards();
                 updateBulkDeleteButtonUI();
-                addLog(`Admin Modu değiştirildi: ${isAdminActive ? 'AKTİF' : 'KAPALI'}`, 'warning');
+                addLog(`Yönetici yetki modu: ${isAdminActive ? 'ETKİN' : 'DEVRE DIŞI'}`, 'warning');
             };
         }
 
@@ -380,18 +416,20 @@
                 if(!confirm(`Seçtiğiniz ${checkedBoxes.length} adet görseli sistemden kalıcı olarak silmek istiyor musunuz?`)) return;
 
                 const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
-                addLog(`${idsToDelete.length} adet görsel sistemden ve veritabanından kazınıyor...`, 'delete');
+                addLog(`${idsToDelete.length} adet veri temizleniyor...`, 'delete');
 
                 const { error } = await supabase.from('gallery_images').delete().in('id', idsToDelete);
 
                 if(error) {
-                    addLog(`Silme işlemi başarısız oldu: ${error.message}`, 'error');
+                    addLog(`Temizleme hatası: ${error.message}`, 'error');
                 } else {
-                    addLog(`Seçilen ${idsToDelete.length} adet görsel başarıyla yok edildi.`, 'success');
+                    addLog(`Seçilen tüm veriler (${idsToDelete.length} öge) başarıyla temizlendi.`, 'success');
+                    
                     idsToDelete.forEach(id => {
                         const cardToRemove = document.querySelector(`.media-card[data-id="${id}"]`);
                         if (cardToRemove) cardToRemove.remove();
                     });
+                    
                     allGalleryData = allGalleryData.filter(item => !idsToDelete.includes(item.id.toString()));
                     filteredData = filteredData.filter(item => !idsToDelete.includes(item.id.toString()));
                     displayedCount -= idsToDelete.length;
