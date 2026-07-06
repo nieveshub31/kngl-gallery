@@ -10,12 +10,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* --- MODERN KARANLIK TEMA CSS --- */
         :root {
             --bg-main: #0b0c10;
             --bg-surface: #14161d;
             --bg-input: #1f222b;
-            --accent: #10b981; /* Canlı Zümrüt Yeşili */
+            --accent: #10b981; 
             --accent-hover: #059669;
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
@@ -42,7 +41,6 @@
             margin: 0 auto;
         }
 
-        /* Header Tasarımı */
         header {
             display: flex;
             justify-content: space-between;
@@ -72,7 +70,6 @@
             align-items: center;
         }
 
-        /* Input & Form Elemanları */
         input {
             padding: 12px 16px;
             background-color: var(--bg-input);
@@ -94,7 +91,6 @@
             width: 260px;
         }
 
-        /* Butonlar */
         button {
             padding: 12px 20px;
             background-color: var(--accent);
@@ -132,7 +128,6 @@
             color: #fff;
         }
 
-        /* Admin Panelleri (Kart Yapısı) */
         #loginSection, #uploadSection {
             background-color: var(--bg-surface);
             padding: 30px;
@@ -160,7 +155,6 @@
             gap: 14px;
         }
 
-        /* Drag & Drop Alanı */
         .drop-zone {
             border: 2px dashed var(--border);
             padding: 35px 20px;
@@ -188,7 +182,6 @@
             letter-spacing: 1px;
         }
 
-        /* Galeri Grid Sistemi */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -270,13 +263,12 @@
         </header>
 
         <section id="loginSection" style="display: none;">
-            <h2>Yetkili Panel Girişi</h2>
+            <h2>Yetkili Şifresi</h2>
             <div class="input-group">
-                <input type="email" id="emailInput" placeholder="E-posta adresi">
-                <input type="password" id="passwordInput" placeholder="Şifre">
-                <button id="loginBtn">Giriş Yap</button>
+                <input type="password" id="passwordInput" placeholder="Erişim kodunu girin...">
+                <button id="loginBtn">Onayla</button>
             </div>
-            <p id="loginError" style="color: var(--danger); display: none; margin-top: 12px; font-size: 14px;"></p>
+            <p id="loginError" style="color: var(--danger); display: none; margin-top: 12px; font-size: 14px;">Hatalı erişim kodu!</p>
         </section>
 
         <section id="uploadSection" style="display: none;">
@@ -303,8 +295,8 @@
     </div>
 
     <script>
-        // 1. KENDİ SUPABASE BİLGİLERİNİ BURAYA YAPIŞTIR
-        const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co/rest/v1/';
+        // 1. SUPABASE BİLGİLERİNİ BURAYA YAPIŞTIRIN
+        const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co/';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -362,10 +354,10 @@
 
         searchInput.addEventListener('input', (e) => fetchImages(e.target.value));
 
-        // --- GİRİŞ / ÇIKIŞ KONTROLLERİ ---
-        async function checkAuth() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (session) {
+        // --- BASİT KOD DOĞRULAMA (nieves1312) ---
+        // Oturumu tarayıcı hafızasında (sessionStorage) tutuyoruz, sayfa yenilenene kadar açık kalır.
+        function checkLocalAuth() {
+            if (sessionStorage.getItem('isKnglrpAdmin') === 'true') {
                 uploadSection.style.display = 'block';
                 showLoginBtn.style.display = 'none';
                 logoutBtn.style.display = 'inline-block';
@@ -381,39 +373,26 @@
             loginSection.style.display = loginSection.style.display === 'none' ? 'block' : 'none';
         });
 
-        document.getElementById('loginBtn').addEventListener('click', async () => {
-            const email = document.getElementById('emailInput').value;
+        document.getElementById('loginBtn').addEventListener('click', () => {
             const password = document.getElementById('passwordInput').value;
             const errEl = document.getElementById('loginError');
             
-            errEl.style.display = 'none';
-
-            if(!email || !password) {
-                errEl.innerText = "Lütfen tüm alanları doldurun.";
-                errEl.style.display = 'block';
-                return;
-            }
-            
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                // Hatanın tam detayını konsola yazdır ki görebilelim
-                console.error("Giriş Hatası Detayı:", error);
-                errEl.innerText = `Hata: ${error.message}`;
-                errEl.style.display = 'block';
-            } else {
-                document.getElementById('emailInput').value = '';
+            if (password === 'nieves1312') {
+                errEl.style.display = 'none';
+                sessionStorage.setItem('isKnglrpAdmin', 'true');
                 document.getElementById('passwordInput').value = '';
-                checkAuth();
+                checkLocalAuth();
+            } else {
+                errEl.style.display = 'block';
             }
         });
 
-        logoutBtn.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            checkAuth();
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('isKnglrpAdmin');
+            checkLocalAuth();
         });
 
-        // --- MEDYA YÜKLEME MANAGE ---
+        // --- MEDYA YÜKLEME İŞLEMLERİ ---
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -490,7 +469,7 @@
         });
 
         // Sayfa ilk açıldığında tetiklenenler
-        checkAuth();
+        checkLocalAuth();
         fetchImages();
     </script>
 </body>
