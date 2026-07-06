@@ -1003,11 +1003,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSearch();
 });
 
+// Artık bu 'supabase' değişkeni üzerinden işlem yapmalısın:
 async function fetchGalleryData() {
-    const { data, error } = await supabase
+    const { data, error } = await supabase // Buradaki 'supabase' yukarıda oluşturduğumuz client
         .from('gallery_images')
         .select('*')
         .order('created_at', { ascending: false });
+    // ...
+}
 
     if (error) {
         console.error("Veri çekme hatası:", error);
