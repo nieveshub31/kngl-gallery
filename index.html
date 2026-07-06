@@ -493,30 +493,26 @@
     width: 34px;
     height: 34px;
     
-    /* İşaretin hizalaması */
+    /* Flex yapısını koruyoruz, ama hizalamayı aşağıda değiştiriyoruz */
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center;    /* Dikey hizalama */
+    justify-content: center; /* Yatay hizalama */
     
     cursor: pointer;
     transition: all 0.2s ease;
     z-index: 15; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
     pointer-events: auto;
+    padding: 0;
 }
 
-/* Çarpı işaretini burada tek ve kontrollü olarak ekliyoruz */
 .delete-card-btn::before {
-    content: "SİL"; 
-    font-size: 25px;
+    content: "×"; 
+    font-size: 26px;
     font-weight: bold;
-    line-height: 0;
-    margin-top: -8px; /* Yukarı-aşağı kaydırmak için bu değeri değiştir */
-}
-
-.delete-card-btn:hover {
-    background-color: var(--danger-red);
-    transform: scale(1.1);
+    /* Dikey konumlandırmayı Flex'in üzerine manuel bir küçük düzeltme ile ekliyoruz */
+    position: relative;
+    top: -2px; /* BURAYI DEĞİŞTİR: -1px, -2px, -3px yaparak tam istediğin yere oturt */
 }
 
         /* SEÇİM KUTUSU DA RESMİN SOL ÜSTÜNE SABİTLENDİ */
