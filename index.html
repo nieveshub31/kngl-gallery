@@ -1083,8 +1083,11 @@ function updatePaginationUI() {
 function changePage(dir) { currentPage += dir; renderGallery(); window.scrollTo(0, 0); }
 function goToPage(p) { currentPage = p; renderGallery(); window.scrollTo(0, 0); }
 
-// Başlat
-fetchAndRender();
+// Sayfanın HTML yapısının tamamen yüklendiğinden emin oluyoruz
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM hazır, galeri yükleniyor...");
+    fetchAndRender(); 
+});
     </script>
 </body>
 </html>
