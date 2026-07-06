@@ -1001,7 +1001,60 @@
         }
 
         fetchImages();
-        
+
+let displayedCount = 0; // Şu an ekranda kaç görsel var?
+const itemsPerScroll = 20; // Her seferde kaç tane yüklenecek?
+let allGalleryData = [];
+let filteredData = [];
+
+// 1. Veriyi çek
+async function fetchGalleryData() {
+    const { data } = await supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
+    allGalleryData = data || [];
+    filteredData = [...allGalleryData];
+    loadMore(); // İlk 20 taneyi yükle
+}
+
+// 2. Görselleri parça parça yükle
+function loadMore() {
+    const galleryGrid = document.getElementById('galleryGrid');
+    const loading = document.getElementById('loading');
+    
+    // Yükleme sınırını belirle
+    const nextBatch = filteredData.slice(displayedCount, displayedCount + itemsPerScroll);
+    
+    nextBatch.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.innerHTML = `<img src="${item.image_url}" style="width:100%; height:200px; object-fit:cover; border-radius:8px;">`;
+        galleryGrid.appendChild(card);
+    });
+
+    displayedCount += nextBatch.length;
+    loading.style.display = 'none';
+}
+
+// 3. Scroll Takibi (Aşağı indikçe yükle)
+window.onscroll = () => {
+    // Sayfanın en altına yaklaştık mı?
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        if (displayedCount < filteredData.length) {
+            document.getElementById('loading').style.display = 'block';
+            loadMore();
+        }
+    }
+};
+
+// Arama yapıldığında listeyi sıfırla
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    filteredData = allGalleryData.filter(item => item.tags.toLowerCase().includes(term));
+    displayedCount = 0;
+    document.getElementById('galleryGrid').innerHTML = '';
+    loadMore();
+});
+
+fetchGalleryData();
     </script>
 </body>
 </html>
