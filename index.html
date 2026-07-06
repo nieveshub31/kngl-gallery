@@ -3,47 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sunucu Galerisi</title>
-    <link rel="stylesheet" href="style.css">
+    <title>KNGLRP - Topluluk Galerisi</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* --- CSS STİLLERİ --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            color: #4CAF50; /* KNGLRP için vurgu rengi */
+            margin: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            padding: 10px;
+            background-color: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        button:hover { background-color: #45a049; }
+        
+        button.danger { background-color: #d32f2f; }
+        button.danger:hover { background-color: #b71c1c; }
+
+        #loginSection, #uploadSection {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            border: 1px solid #333;
+        }
+
+        .drop-zone {
+            border: 2px dashed #4CAF50;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #222;
+            margin-bottom: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .drop-zone.dragover { background-color: #333; }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-bottom: 1px solid #333;
+        }
+
+        .tags {
+            padding: 12px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        
+        .tag-badge {
+            background-color: #333;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>Sunucu Galerisi</h1>
+        <h1>KNGLRP Galerisi</h1>
         <div class="header-controls">
-            <input type="text" id="searchInput" placeholder="Etikete göre ara (örn: lspd, çete)...">
+            <input type="text" id="searchInput" placeholder="Tag ile ara (örn: lspd, çete)...">
             <button id="showLoginBtn">Yetkili Girişi</button>
-            <button id="logoutBtn" style="display: none;">Çıkış Yap</button>
+            <button id="logoutBtn" class="danger" style="display: none;">Çıkış Yap</button>
         </div>
     </header>
 
     <section id="loginSection" style="display: none;">
-        <input type="email" id="emailInput" placeholder="Admin E-posta">
-        <input type="password" id="passwordInput" placeholder="Şifre">
-        <button id="loginBtn">Giriş Yap</button>
-        <p id="loginError" style="color: red; display: none;">Giriş başarısız.</p>
+        <h2>KNGLRP Yetkili Girişi</h2>
+        <div class="input-group">
+            <input type="email" id="emailInput" placeholder="Admin E-posta">
+            <input type="password" id="passwordInput" placeholder="Şifre">
+            <button id="loginBtn">Giriş Yap</button>
+        </div>
+        <p id="loginError" style="color: #ff5252; display: none; margin-top: 10px;">Giriş başarısız. Bilgilerinizi kontrol edin.</p>
     </section>
 
     <section id="uploadSection" style="display: none;">
         <h2>Yeni Görsel Yükle</h2>
         
         <div id="dropZone" class="drop-zone">
-            Dosyayı buraya sürükle-bırak veya seçmek için tıkla
+            <span>Dosyayı buraya sürükle-bırak veya seçmek için tıkla</span>
             <input type="file" id="fileInput" accept="image/*" hidden>
         </div>
         
-        <p style="text-align: center; margin: 10px 0;">VEYA LİNK İLE</p>
+        <p style="text-align: center; margin: 10px 0; color: #888;">VEYA GÖRSEL LİNKİ GİRİN</p>
         
-        <input type="text" id="linkInput" placeholder="Görsel linkini yapıştır...">
-        <input type="text" id="tagInput" placeholder="Etiketler (araya virgül koy, örn: araç, modifiye)">
-        
-        <button id="uploadBtn">Görseli Galeriye Ekle</button>
-        <p id="uploadStatus"></p>
+        <div class="input-group">
+            <input type="text" id="linkInput" placeholder="Görsel linkini yapıştır (isteğe bağlı)...">
+            <input type="text" id="tagInput" placeholder="Tag'ler (araya virgül koy, örn: araç, modifiye, lspd)">
+            <button id="uploadBtn">Görseli Galeriye Ekle</button>
+        </div>
+        <p id="uploadStatus" style="color: #4CAF50; font-weight: bold;"></p>
     </section>
 
     <main id="galleryGrid" class="grid-container">
         </main>
 
-    <script src="app.js"></script>
+    <script>
+        // 1. SUPABASE BİLGİLERİNİ BURAYA GİR
+        const SUPABASE_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // HTML Elementlerini Seçme
+        const galleryGrid = document.getElementById('galleryGrid');
+        const searchInput = document.getElementById('searchInput');
+        const loginSection = document.getElementById('loginSection');
+        const uploadSection = document.getElementById('uploadSection');
+        const showLoginBtn = document.getElementById('showLoginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        let selectedFile = null;
+
+        // --- GALERİYİ YÜKLEME VE ARAMA SİSTEMİ ---
+        async function fetchImages(searchQuery = '') {
+            galleryGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">KNGLRP Görselleri yükleniyor...</p>';
+            
+            let query = supabase.from('gallery_images').select('*').order('created_at', { ascending: false });
+            
+            if (searchQuery) {
+                // Etiketlerde arama yapar
+                query = query.ilike('tags', `%${searchQuery}%`);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                galleryGrid.innerHTML = `<p style="color: red;">Görseller çekilirken hata oluştu: ${error.message}</p>`;
+                return;
+            }
+
+            galleryGrid.innerHTML = '';
+            
+            if (data.length === 0) {
+                galleryGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">Henüz görsel bulunmuyor veya aramanıza uygun sonuç yok.</p>';
+                return;
+            }
+
+            data.forEach(item => {
+                // Etiketleri virgülle ayırıp badge (etiket kutucuğu) görünümü verme
+                const tagsHtml = item.tags.split(',')
+                    .map(tag => `<span class="tag-badge">#${tag.trim()}</span>`)
+                    .join('');
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${item.image_url}" alt="KNGLRP Görseli" loading="lazy">
+                    <div class="tags">${tagsHtml}</div>
+                `;
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        // Arama kutusuna yazı yazıldıkça anlık arama
+        searchInput.addEventListener('input', (e) => {
+            fetchImages(e.target.value);
+        });
+
+        // --- YETKİLİ GİRİŞ / ÇIKIŞ SİSTEMİ ---
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                uploadSection.style.display = 'block';
+                showLoginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                loginSection.style.display = 'none';
+            } else {
+                uploadSection.style.display = 'none';
+                showLoginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        showLoginBtn.addEventListener('click', () => {
+            loginSection.style.display = loginSection.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                document.getElementById('loginError').style.display = 'block';
+            } else {
+                document.getElementById('loginError').style.display = 'none';
+                document.getElementById('emailInput').value = '';
+                document.getElementById('passwordInput').value = '';
+                checkAuth();
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            checkAuth();
+        });
+
+        // --- GÖRSEL YÜKLEME (SÜRÜKLE BIRAK & LİNK) ---
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            dropZone.classList.add('dragover'); 
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                selectedFile = e.dataTransfer.files[0];
+                dropZone.innerHTML = `<span style="color: #4CAF50;">Seçilen Dosya: ${selectedFile.name}</span>`;
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                selectedFile = e.target.files[0];
+                dropZone.innerHTML = `<span style="color: #4CAF50;">Seçilen Dosya: ${selectedFile.name}</span>`;
+            }
+        });
+
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            const linkInput = document.getElementById('linkInput').value;
+            const tags = document.getElementById('tagInput').value;
+            const statusText = document.getElementById('uploadStatus');
+            
+            if (!tags) return alert('Lütfen arama için en az bir tag girin!');
+            if (!selectedFile && !linkInput) return alert('Lütfen bir dosya sürükleyin veya direkt link girin!');
+
+            statusText.style.color = '#fff';
+            statusText.innerText = "Sunucuya yükleniyor, lütfen bekleyin...";
+            
+            let finalImageUrl = linkInput;
+
+            // Dosya yüklendiyse Supabase Storage'a gönder
+            if (selectedFile) {
+                // Benzersiz dosya ismi oluştur
+                const fileExt = selectedFile.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                
+                const { error: uploadError } = await supabase.storage
+                    .from('gallery')
+                    .upload(fileName, selectedFile);
+                    
+                if (uploadError) {
+                    statusText.style.color = '#ff5252';
+                    return statusText.innerText = 'Storage Hatası: ' + uploadError.message;
+                }
+
+                // Public URL'i al
+                const { data } = supabase.storage.from('gallery').getPublicUrl(fileName);
+                finalImageUrl = data.publicUrl;
+            }
+
+            // Veritabanına görselleri ve tag'leri kaydet
+            const { error: dbError } = await supabase.from('gallery_images').insert([
+                { image_url: finalImageUrl, tags: tags }
+            ]);
+
+            if (dbError) {
+                statusText.style.color = '#ff5252';
+                statusText.innerText = 'Database Hatası: ' + dbError.message;
+            } else {
+                statusText.style.color = '#4CAF50';
+                statusText.innerText = 'Görsel başarıyla KNGLRP Galerisine eklendi!';
+                
+                // Formu temizle
+                document.getElementById('linkInput').value = '';
+                document.getElementById('tagInput').value = '';
+                selectedFile = null;
+                dropZone.innerHTML = 'Dosyayı buraya sürükle-bırak veya seçmek için tıkla';
+                fileInput.value = ''; // File input reset
+                
+                // 3 saniye sonra mesajı sil
+                setTimeout(() => statusText.innerText = '', 3000);
+                
+                // Galeriyi anında yenile
+                fetchImages(); 
+            }
+        });
+
+        // Sayfa açıldığında çalıştır
+        checkAuth();
+        fetchImages();
+    </script>
 </body>
 </html>
