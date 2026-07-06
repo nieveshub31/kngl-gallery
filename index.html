@@ -417,7 +417,6 @@
             transform: scale(1.05);
         }
 
-        /* CARD FOOTER - BOŞKEN TAMAMEN GİZLENİR */
         .card-footer {
             padding: 14px;
             display: flex;
@@ -430,7 +429,6 @@
             display: none;
         }
 
-        /* ADMIN ETİKET DÜZENLEME ALANI */
         .admin-tag-edit-area {
             padding: 10px 14px 10px 14px;
             display: flex;
@@ -674,7 +672,6 @@
             
             <div class="modal-header-area">
                 <h2>Görsel Kontrol Paneli</h2>
-                <button id="deleteAllBtn" class="btn-danger" style="padding: 10px 18px; font-size: 13px;">Tüm Galeri Sıfırla</button>
             </div>
             <p class="panel-desc">Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
             
@@ -781,7 +778,6 @@
         const mainActionBtn = document.getElementById('mainActionBtn');
         const exitAdminModeBtn = document.getElementById('exitAdminModeBtn');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-        const deleteAllBtn = document.getElementById('deleteAllBtn');
         const loadingIdx = document.getElementById('loading');
         
         const passwordModal = document.getElementById('passwordModal');
@@ -993,7 +989,7 @@
         if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
         // ==========================================
-        // 7. DOSYA / ÇOKLU LINK YÜKLEME MOTORU (ZORUNLULUK KALKTI)
+        // 7. DOSYA / ÇOKLU LINK YÜKLEME MOTORU
         // ==========================================
         if (uploadBtn) {
             uploadBtn.addEventListener('click', async () => {
@@ -1055,7 +1051,6 @@
                             continue; 
                         }
 
-                        // Eğer özel veya genel etiket yoksa boş dize gider
                         const finalTags = item.customTag.trim() ? item.customTag.trim() : generalTags;
 
                         const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
@@ -1161,11 +1156,9 @@
             } else {
                 addLog(`ID:${id} etiketleri başarıyla güncellendi: "${trimmedTags}"`, 'success');
                 
-                // Küresel veriyi yerel olarak güncelle (Arama/Sıralama bozulmasın diye)
                 const targetObj = allGalleryData.find(x => x.id == id);
                 if (targetObj) targetObj.tags = trimmedTags;
                 
-                // Kart üzerindeki alt tag alanını dinamik yenile
                 const footer = cardElement.querySelector('.card-footer');
                 if (footer) {
                     footer.innerHTML = trimmedTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
@@ -1194,7 +1187,6 @@
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
                     </div>
                     
-                    <!-- ADMIN CANLI TAG EDİTÖRÜ -->
                     <div class="admin-tag-edit-area" style="display: ${adminDisplay}">
                         <input type="text" class="admin-tag-input" placeholder="Etiketleri düzenle (virgülle ayır)" value="${currentTags}">
                     </div>
@@ -1202,7 +1194,6 @@
                     <div class="card-footer">${tagsHtml}</div>
                 `;
 
-                // Kart Tıklama Davranışları
                 card.addEventListener('click', (e) => {
                     const checkbox = card.querySelector('.card-select-checkbox');
                     const deleteBtn = card.querySelector('.delete-card-btn');
@@ -1219,10 +1210,8 @@
                     }
                 });
 
-                // Canlı Düzenleme Input Eventleri
                 const inlineTagInput = card.querySelector('.admin-tag-input');
                 if (inlineTagInput) {
-                    // Kaydetme tetikleyicileri (Kutudan çıkınca veya Enter'a basınca)
                     inlineTagInput.addEventListener('blur', function() {
                         if (this.value !== item.tags) {
                             updateCardTagsInDatabase(item.id, this.value, card);
@@ -1230,7 +1219,7 @@
                     });
                     inlineTagInput.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
-                            this.blur(); // focus'u kaldırarak blur eventini tetikler
+                            this.blur();
                         }
                     });
                 }
@@ -1327,28 +1316,6 @@
 
                 addLog('Toplu silme algoritması bitirildi.', 'success');
                 fetchGalleryData();
-            });
-        }
-
-        if (deleteAllBtn) {
-            deleteAllBtn.addEventListener('click', async function() {
-                if (!confirm('DİKKAT: Galerideki TÜM resimler ve bulut deposundaki asıl dosyalar kalıcı olarak silinecek!')) return;
-                if (!confirm('Son onayınız mı?')) return;
-
-                addLog('KRİTİK TALEP: Tüm galeri veritabanı ve depolama havuzu boşaltılıyor!', 'warn');
-
-                for (let item of allGalleryData) {
-                    await removeFileFromStorage(item.image_url);
-                }
-
-                const { error } = await knglSupaClient.from('gallery_images').delete().gt('id', 0);
-                if (error) {
-                    addLog('Tablo sıfırlama hatası: ' + error.message, 'error');
-                } else {
-                    addLog('Veritabanı tablosu ve bulut bütünüyle temizlendi. Tertemiz!', 'success');
-                    uploadModal.style.display = 'none';
-                    fetchGalleryData();
-                }
             });
         }
 
