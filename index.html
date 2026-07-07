@@ -37,7 +37,9 @@
             color: var(--text-white);
             min-height: 100vh;
             padding: 0;
+            /* FIX: overflow-x gizli kalmalı ancak overflow-y kesinlikle açık olmalı ki sayfa aşağı kaysın */
             overflow-x: hidden;
+            overflow-y: auto; 
         }
 
         body::before {
@@ -55,6 +57,7 @@
             padding: 40px 24px;
             position: relative;
             z-index: 1;
+            min-height: 100vh;
         }
 
         header {
@@ -252,7 +255,6 @@
         }
         .modal-close-btn:hover { color: white; }
 
-        /* YÜKLEME PANELİ DÜZENLEMELERİ */
         .upload-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -376,7 +378,6 @@
             margin-bottom: -4px;
         }
 
-        /* GALERİ GRID VE KART TASARIMI */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
@@ -401,7 +402,7 @@
             -webkit-user-drag: none;
             display: flex;
             flex-direction: column;
-            height: 260px; /* Sabit yükseklik ile tam uyum */
+            height: 260px; 
         }
 
         .media-card:hover {
@@ -414,7 +415,6 @@
             height: 100%;
             overflow: hidden;
             background-color: var(--bg-darker);
-            pointer-events: none;
             position: relative;
         }
 
@@ -430,7 +430,6 @@
             transform: scale(1.04);
         }
 
-        /* RESİM ÜZERİNDEKİ TAG KATMANI (OVERLAY) */
         .card-tags-overlay {
             position: absolute;
             bottom: 0;
@@ -441,7 +440,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            pointer-events: none; /* Kart tıklamasını engellememesi için */
+            pointer-events: none; 
             z-index: 5;
         }
 
@@ -457,7 +456,6 @@
             backdrop-filter: blur(4px);
         }
 
-        /* RESİM ÜZERİNDEKİ EDİTÖR GİRİŞİ */
         .admin-tag-edit-area {
             position: absolute;
             bottom: 0;
@@ -482,38 +480,40 @@
             border-color: var(--accent-green);
         }
 
+        /* FIX: Çarpı Butonu Kusursuz Hizalama Stilleri */
         .delete-card-btn {
-    position: absolute;
-    top: 12px; 
-    right: 12px;
-    background-color: rgba(255, 74, 74, 0.95);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    width: 34px;
-    height: 34px;
-    
-    /* Flex yapısını koruyoruz, ama hizalamayı aşağıda değiştiriyoruz */
-    display: flex;
-    align-items: center;    /* Dikey hizalama */
-    justify-content: center; /* Yatay hizalama */
-    
-    cursor: pointer;
-    transition: all 0.2s ease;
-    z-index: 15; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    pointer-events: auto;
-    padding: 0;
-}
+            position: absolute;
+            top: 12px; 
+            right: 12px;
+            background-color: rgba(255, 74, 74, 0.95);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;    
+            justify-content: center; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 15; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            pointer-events: auto;
+            padding: 0;
+        }
 
-.delete-card-btn::before {
-    content: "×"; 
-    font-size: 21px;
-    font-weight: bold;
-    /* Dikey konumlandırmayı Flex'in üzerine manuel bir küçük düzeltme ile ekliyoruz */
-    position: relative;
-    top: -2px; /* BURAYI DEĞİŞTİR: -1px, -2px, -3px yaparak tam istediğin yere oturt */
-}
+        .delete-card-btn::before {
+            content: "×"; 
+            font-size: 21px;
+            font-weight: bold;
+            position: relative;
+            top: -2px; 
+        }
+
+        .delete-card-btn:hover {
+            background-color: var(--danger-red);
+            transform: scale(1.1);
+        }
 
         .card-select-checkbox {
             position: absolute;
@@ -704,7 +704,7 @@
             <button class="modal-close-btn" id="closeUploadModalBtn">&times;</button>
             
             <div class="modal-header-area">
-                <h2>Görsel Kontrol Paneli</h2>
+                <h2>Görsel Kontrol Panelini Aç</h2>
             </div>
             <p class="panel-desc">Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
             
@@ -723,7 +723,7 @@
                 
                 <div class="form-right">
                     <div class="divider-text">Doğrudan Link (Çoklu Giriş Aktif)</div>
-                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırebilir veya alt satıra geçebilirsiniz."></textarea>
+                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
                     
                     <div class="divider-text">Ortak Etiket Tanımı</div>
                     <input type="text" id="tagInput" placeholder="Genel Etiketler (İsteğe bağlı, virgülle ayırın: lspd, car)">
@@ -768,7 +768,7 @@
         let allGalleryData = []; 
         let filteredData = [];   
         let displayedCount = 0;  
-        const itemsPerScroll = 50; 
+        const itemsPerScroll = 20; 
 
         function addLog(text, type = 'info') {
             const loggerBody = document.getElementById('loggerBody');
@@ -1025,6 +1025,31 @@
         }
         if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files.length) handleFilesSelection(e.target.files); });
 
+        // FIX: URL GİRİLDİĞİNDE KALICI OLARAK DEPOYA KAYDETME MOTORU (CORS BAĞIMLI)
+        async function fetchImageAndUploadToStorage(url, generalTags) {
+            try {
+                addLog(`Uzak görsel indiriliyor ve depoya hazırlanıyor: ${url.substring(0, 40)}...`, 'info');
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Görsel adresten çekilemedi.");
+                
+                const blob = await res.blob();
+                const fileExt = blob.type.split('/')[1] || 'jpg';
+                const fileName = `url_import_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                
+                const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, blob, {
+                    contentType: blob.type
+                });
+                
+                if (upErr) throw upErr;
+                
+                const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
+                return data.publicUrl;
+            } catch (err) {
+                addLog(`Link dönüştürme başarısız (CORS koruması veya geçersiz URL): ${err.message}. Link doğrudan kaydediliyor.`, 'warn');
+                return url; // CORS engeline takılırsa linki doğrudan kaydetmeyi dener (Fallback)
+            }
+        }
+
         // ==========================================
         // 7. DOSYA / ÇOKLU LINK YÜKLEME MOTORU
         // ==========================================
@@ -1052,16 +1077,26 @@
                 statusText.innerText = "Kuyruk işleniyor, lütfen bekleyin...";
                 addLog('Toplu yükleme/indeksleme algoritması başlatıldı...', 'info');
 
-                // Uzak Linklerin İndekslenmesi
+                // FIX: Uzak Linkleri Önce Kendi Supabase Storage'ımıza Çekiyoruz, Sonra Veritabanına İndeksliyoruz
                 if (linkUrls.length > 0) {
-                    addLog(`Toplam ${linkUrls.length} adet uzak URL veritabanına indeksleniyor...`, 'info');
-                    const insertRows = linkUrls.map(url => ({ image_url: url, tags: generalTags || '' }));
-                    const { error: bulkLinkErr } = await knglSupaClient.from('gallery_images').insert(insertRows);
+                    addLog(`Toplam ${linkUrls.length} adet uzak URL kalıcı depolama için optimize ediliyor...`, 'info');
+                    uploadProgressContainer.style.display = 'block';
+                    uploadProgressBar.style.width = '0%';
                     
-                    if (bulkLinkErr) {
-                        addLog('Çoklu link veritabanı kayıt hatası: ' + bulkLinkErr.message, 'error');
-                    } else {
-                        addLog(`${linkUrls.length} adet harici görsel linki başarıyla kaydedildi.`, 'success');
+                    for (let k = 0; k < linkUrls.length; k++) {
+                        const targetUrl = linkUrls[k];
+                        const permanentUrl = await fetchImageAndUploadToStorage(targetUrl, generalTags);
+                        
+                        const { error: linkInsertErr } = await knglSupaClient
+                            .from('gallery_images')
+                            .insert([{ image_url: permanentUrl, tags: generalTags || '' }]);
+                            
+                        if (linkInsertErr) {
+                            addLog('Link veritabanı kayıt hatası: ' + linkInsertErr.message, 'error');
+                        }
+                        
+                        const percentLinkComplete = Math.round(((k + 1) / linkUrls.length) * 100);
+                        uploadProgressBar.style.width = `${percentLinkComplete}%`;
                     }
                     document.getElementById('linkInput').value = '';
                 }
@@ -1099,8 +1134,9 @@
                     
                     selectedFilesQueue = [];
                     renderPreviews();
-                    setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1000);
                 }
+
+                setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1000);
 
                 statusText.style.color = 'var(--accent-green)';
                 statusText.innerText = 'Tüm medyalar sisteme işlendi!';
@@ -1150,17 +1186,14 @@
             } else if (sortOrder === 'oldest') {
                 filteredData.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
             } else if (sortOrder === 'alpha-asc' || sortOrder === 'alpha-desc') {
-                // ALFABETİK SIRALAMA: ETİKETSİZLERİ SONA ATMA MOTORU
                 filteredData.sort((a, b) => {
                     const tagA = (a.tags || '').trim();
                     const tagB = (b.tags || '').trim();
 
-                    // İkisi de boşsa veya ikisi de doluysa normal sırala
                     if (!tagA && !tagB) return 0;
-                    if (!tagA) return 1;  // a boşsa b önce gelsin (a sona gitsin)
-                    if (!tagB) return -1; // b boşsa a önce gelsin (b sona gitsin)
+                    if (!tagA) return 1;  
+                    if (!tagB) return -1; 
 
-                    // İkisi de doluysa seçilen yöne göre alfabetik sırala
                     if (sortOrder === 'alpha-asc') {
                         return tagA.localeCompare(tagB, 'tr');
                     } else {
@@ -1191,7 +1224,6 @@
             loadMoreBatch();
         }
 
-        // CANLI ETİKET GÜNCELLEME MOTORU (DB ENTEGRASYONU)
         async function updateCardTagsInDatabase(id, newTagsValue, cardElement) {
             addLog(`ID:${id} için etiket güncelleme talebi gönderildi...`, 'info');
             const trimmedTags = newTagsValue.trim();
@@ -1210,7 +1242,6 @@
                 const targetObj = allGalleryData.find(x => x.id == id);
                 if (targetObj) targetObj.tags = trimmedTags;
                 
-                // Overlay katmanını yeniden derle
                 const overlay = cardElement.querySelector('.card-tags-overlay');
                 if (overlay) {
                     if (trimmedTags) {
@@ -1238,7 +1269,6 @@
                 card.className = 'media-card';
                 card.setAttribute('data-id', item.id);
 
-                // Eğer etiket yoksa overlay katmanını ilk başta gizliyoruz
                 const hasTagsStyle = currentTags.trim() ? 'display: flex;' : 'display: none;';
 
                 card.innerHTML = `
@@ -1247,14 +1277,11 @@
                     
                     <div class="img-container">
                         <img src="${item.image_url}" alt="KNGLRP Media" loading="lazy" draggable="false">
-                        
-                        <!-- Resim Üzerindeki Tag Katmanı (Normal Kullanıcı) -->
                         <div class="card-tags-overlay" style="${isAdminActive ? 'display:none;' : hasTagsStyle}">
                             ${tagsHtml}
                         </div>
                     </div>
                     
-                    <!-- Resim Üzerindeki Input Alanı (Admin Modu) -->
                     <div class="admin-tag-edit-area" style="display: ${adminDisplay}">
                         <input type="text" class="admin-tag-input" placeholder="Etiketleri düzenle (virgülle ayır)" value="${currentTags}">
                     </div>
@@ -1327,11 +1354,16 @@
             updateSelectedCount();
         }
 
+        // FIX: Kusursuz Sonsuz Kaydırma (Infinite Scroll) Motoru
         window.onscroll = () => {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+            const totalPageHeight = document.documentElement.scrollHeight;
+            const scrollPoint = window.innerHeight + window.scrollY;
+
+            // Alt sınıra 600px kala otomatik olarak yeni grubu tetikler
+            if (scrollPoint >= (totalPageHeight - 600)) {
                 if (displayedCount < filteredData.length && loadingIdx && loadingIdx.style.display !== 'block') {
                     loadingIdx.style.display = 'block';
-                    addLog('Sonsuz kaydırma tetiklendi, yeni veriler talep ediliyor...', 'info');
+                    addLog('Sonsuz kaydırma tetiklendi, yeni veriler çağrılıyor...', 'info');
                     loadMoreBatch();
                 }
             }
