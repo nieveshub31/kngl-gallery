@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KNGLRP | Premium Media Gallery</title>
+    <title>KNGLRP | Gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -891,13 +891,13 @@
     <div id="uploadModal" class="modal-overlay">
         <div class="modal-content large-panel">
             <button class="modal-close-btn" id="closeUploadModalBtn">&times;</button>
-            <div class="modal-header-area"><h2>Görsel Kontrol Panelini Aç</h2></div>
+            <div class="modal-header-area"><h2>Görsel Yükleme Paneli</h2></div>
             <p class="panel-desc">Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
             <div class="upload-grid">
                 <div class="form-left">
                     <div class="divider-text">Yerel Dosya Seçimi</div>
                     <div id="dropZone" class="drop-zone">
-                        <span id="dropZoneText">Birden fazla görsel sürükleyin veya tıklayıp seçin</span>
+                        <span id="dropZoneText">Birden fazla görsel sürükleyin veya TIKLAYIP seçin</span>
                         <input type="file" id="fileInput" accept="image/*" multiple hidden>
                     </div>
                     <div class="preview-wrapper" id="previewWrapper" style="display: none;">
@@ -905,12 +905,12 @@
                     </div>
                 </div>
                 <div class="form-right">
-                    <div class="divider-text">Doğrudan Link (Çoklu Giriş Aktif)</div>
-                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise virgülle ayırabilir veya alt satıra geçebilirsiniz."></textarea>
-                    <div class="divider-text">Ortak Etiket Tanımı</div>
-                    <input type="text" id="tagInput" placeholder="Genel Etiketler (İsteğe bağlı, virgülle ayırın: lspd, car)">
+                    <div class="divider-text">Link İle Yükleme </div>
+                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise  alt satıra geçebilirsiniz."></textarea>
+                    <div class="divider-text">Etiket Ekle</div>
+                    <input type="text" id="tagInput" placeholder="(İsteğe bağlı, virgülle ayırın: lspd, car)">
                     <div class="progress-container" id="uploadProgressContainer"><div class="progress-bar" id="uploadProgressBar"></div></div>
-                    <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 16px;">Galeriye Gönder</button>
+                    <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 16px;">Görsel Yükle</button>
                 </div>
             </div>
             <p id="uploadStatus" style="margin-top: 16px; font-size: 13px; font-weight: 600; text-align: center; color: var(--accent-green);"></p>
