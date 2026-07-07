@@ -441,7 +441,6 @@
             transform: scale(1.04);
         }
 
-        /* NEW: Kart Üstü Premium Aksiyon Butonları */
         .card-actions-overlay {
             position: absolute;
             top: 12px;
@@ -574,7 +573,7 @@
 
         .card-select-checkbox {
             position: absolute;
-            top: 16px; right: 54px; /* Admin modunda silme butonuyla çakışmasın */
+            top: 16px; right: 54px; 
             width: 22px;
             height: 22px;
             accent-color: var(--accent-green);
@@ -627,7 +626,6 @@
             transform: none !important;
         }
 
-        /* NEW: Lightbox Navigasyon Geliştirmeleri */
         .lightbox-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -658,6 +656,57 @@
             object-fit: contain;
             -webkit-user-drag: none;
         }
+
+        /* NEW: Lightbox Üst Sağ Menü (İndirme, Kopyalama ve Kapatma Alanı) */
+        .lightbox-top-actions {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2200;
+        }
+
+        .lightbox-action-btn {
+            background-color: rgba(17, 19, 26, 0.85);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .lightbox-action-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            background-color: var(--bg-input);
+            transform: scale(1.05);
+        }
+
+        .lightbox-action-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .lightbox-close-text-btn {
+            font-size: 32px;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+            margin-left: 6px;
+        }
+        .lightbox-close-text-btn:hover { color: white; }
 
         .lightbox-nav-btn {
             position: fixed;
@@ -694,6 +743,7 @@
             .lightbox-prev { left: 15px; }
             .lightbox-next { right: 15px; }
             .card-actions-overlay { opacity: 1; transform: none; }
+            .lightbox-top-actions { top: -60px; }
         }
 
         .live-logger-panel {
@@ -870,7 +920,17 @@
     <div id="lightboxOverlay" class="lightbox-overlay">
         <button class="lightbox-nav-btn lightbox-prev" id="lightboxPrevBtn">‹</button>
         <div class="lightbox-content">
-            <button class="modal-close-btn" id="closeLightboxBtn" style="color:white; top:-40px; right:0;">&times;</button>
+            
+            <div class="lightbox-top-actions">
+                <button class="lightbox-action-btn" title="Linki Kopyala" id="lightboxCopyBtn">
+                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
+                <button class="lightbox-action-btn" title="Görseli İndir" id="lightboxDownloadBtn">
+                    <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 11h4.17v4h5v-4h4.17L12 2z"/></svg>
+                </button>
+                <button class="lightbox-close-text-btn" id="closeLightboxBtn">&times;</button>
+            </div>
+
             <img id="lightboxImg" src="" alt="Önizleme" draggable="false">
         </div>
         <button class="lightbox-nav-btn lightbox-next" id="lightboxNextBtn">›</button>
@@ -900,8 +960,6 @@
         
         let currentPage = 1;
         const itemsPerPage = 50;
-
-        // NEW: Lightbox Gezinti İndeksi
         let currentLightboxIndex = -1;
 
         function addLog(text, type = 'info') {
@@ -960,6 +1018,8 @@
         const closeLightboxBtn = document.getElementById('closeLightboxBtn');
         const lightboxPrevBtn = document.getElementById('lightboxPrevBtn');
         const lightboxNextBtn = document.getElementById('lightboxNextBtn');
+        const lightboxCopyBtn = document.getElementById('lightboxCopyBtn');
+        const lightboxDownloadBtn = document.getElementById('lightboxDownloadBtn');
 
         const liveLoggerPanel = document.getElementById('liveLoggerPanel');
         const loggerHeader = document.getElementById('loggerHeader');
@@ -978,11 +1038,40 @@
         }
 
         // ==========================================
-        // NEW: LIGHTBOX VE OK NAVİGASYON MOTORU
+        // LİNK KOPYALAMA VE İNDİRME FONKSİYONLARI (KÜRESEL)
+        // ==========================================
+        window.copyImageLink = function(e, url) {
+            if (e) e.stopPropagation(); 
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Görsel adresi panoya kopyalandı!');
+            }).catch(() => {
+                alert('Kopyalama başarısız oldu.');
+            });
+        };
+
+        window.downloadImage = async function(e, url) {
+            if (e) e.stopPropagation();
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `kngl_media_${Date.now()}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                window.open(url, '_blank');
+            }
+        };
+
+        // ==========================================
+        // LIGHTBOX VE OK NAVİGASYON MOTORU
         // ==========================================
         window.openLightbox = function(url) {
             if (!url) return;
-            // Filtrelenmiş veri kümesinde görselin sırasını bul (Tüm sayfalarda sorunsuz gezinmek için)
             currentLightboxIndex = filteredData.findIndex(item => item.image_url === url);
             lightboxImg.src = url;
             lightboxOverlay.style.display = 'flex';
@@ -1000,6 +1089,23 @@
             lightboxImg.src = filteredData[currentLightboxIndex].image_url;
         }
 
+        // NEW: Lightbox Üst Buton Tetikleyicileri
+        if (lightboxCopyBtn) {
+            lightboxCopyBtn.addEventListener('click', (e) => {
+                if (currentLightboxIndex !== -1 && filteredData[currentLightboxIndex]) {
+                    copyImageLink(e, filteredData[currentLightboxIndex].image_url);
+                }
+            });
+        }
+
+        if (lightboxDownloadBtn) {
+            lightboxDownloadBtn.addEventListener('click', (e) => {
+                if (currentLightboxIndex !== -1 && filteredData[currentLightboxIndex]) {
+                    downloadImage(e, filteredData[currentLightboxIndex].image_url);
+                }
+            });
+        }
+
         if (lightboxNextBtn) lightboxNextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox('next'); });
         if (lightboxPrevBtn) lightboxPrevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox('prev'); });
         if (closeLightboxBtn) closeLightboxBtn.addEventListener('click', () => lightboxOverlay.style.display = 'none');
@@ -1007,7 +1113,7 @@
             lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) lightboxOverlay.style.display = 'none'; });
         }
 
-        // Klavye Ok Tuşları Entegrasyonu
+        // Klavye Kontrolleri
         document.addEventListener('keydown', function(e) {
             if (lightboxOverlay.style.display === 'flex') {
                 if (e.key === 'ArrowRight') navigateLightbox('next');
@@ -1015,37 +1121,6 @@
                 if (e.key === 'Escape') lightboxOverlay.style.display = 'none';
             }
         });
-
-        // ==========================================
-        // NEW: LİNK KOPYALAMA VE INDİRME FONKSİYONLARI
-        // ==========================================
-        window.copyImageLink = function(e, url) {
-            e.stopPropagation(); // Karta tıklama tetiklenmesin
-            navigator.clipboard.writeText(url).then(() => {
-                alert('Görsel adresi panoya kopyalandı!');
-            }).catch(() => {
-                alert('Kopyalama başarısız oldu.');
-            });
-        };
-
-        window.downloadImage = async function(e, url) {
-            e.stopPropagation();
-            try {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = `kngl_media_${Date.now()}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(blobUrl);
-            } catch (err) {
-                // Güvenlik politikasından dolayı hata alınırsa doğrudan yeni sekmede açtır
-                window.open(url, '_blank');
-            }
-        };
 
         // ==========================================
         // MODAL POPUP YÖNETİMİ & ŞİFRELİ GİRİŞ
