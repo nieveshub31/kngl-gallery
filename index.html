@@ -23,6 +23,19 @@
             --danger-red: #ff4a4a;
             --log-warn: #ffb86c;
             --log-storage: #8be9fd;
+            --gradient-start: #00ff87;
+            --gradient-end: #00ffcc;
+        }
+
+        /* Siber Mor (Neon Night) Teması Değişkenleri */
+        [data-theme="cyber-purple"] {
+            --accent-green: #d300ff; /* İsmi koruyoruz ki CSS çakışmasın, rengi mor yapıyoruz */
+            --accent-glow: rgba(211, 0, 255, 0.2);
+            --gradient-start: #d300ff;
+            --gradient-end: #00f0ff;
+            --border-color: #2b173c;
+            --bg-input: #1a1424;
+            --bg-card: #140f1d;
         }
 
         * {
@@ -39,13 +52,14 @@
             padding: 0;
             overflow-x: hidden;
             overflow-y: auto !important;
+            transition: background-color 0.3s ease;
         }
 
         body::before {
             content: '';
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 80% 20%, rgba(0, 255, 135, 0.03) 0%, transparent 50%);
+            background: radial-gradient(circle at 80% 20%, var(--accent-glow) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
@@ -71,16 +85,12 @@
             gap: 20px;
         }
 
-       /* ==========================================
-           YENİLENMİŞ LOGO ALANI VE PREMIUM NEON EFEKTLERİ
-           ========================================== */
         .logo-area {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        /* Canlı neon durum göstergesi */
         .logo-status-glow {
             width: 8px;
             height: 8px;
@@ -102,7 +112,6 @@
             transition: letter-spacing 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Fare ile üzerine gelindiğinde harflerin açılması ve hafif opaklık efekti */
         .logo-area:hover h1 {
             letter-spacing: 1.5px;
         }
@@ -113,14 +122,13 @@
         .logo-area h1 span {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-green) 0%, #00ffcc 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 12px rgba(0, 255, 135, 0.35));
             position: relative;
         }
 
-        /* Durum göstergesi için nabız animasyonu */
         @keyframes neonPulse {
             0% {
                 transform: scale(0.9);
@@ -133,6 +141,7 @@
                 box-shadow: 0 0 16px var(--accent-green), 0 0 25px var(--accent-green);
             }
         }
+        
         .controls-area {
             display: flex;
             align-items: center;
@@ -140,8 +149,35 @@
         }
 
         /* ==========================================
-           KNGLRP AÇIKLAMA (ABOUT) ALANI STİLLERİ
+           YENİ TEMA SEÇİCİ BUTON STİLLERİ (RGB MODE)
            ========================================== */
+        .theme-toggle-btn {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-glow);
+            color: var(--accent-green);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
         .about-area {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -150,6 +186,7 @@
             margin-bottom: 40px;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .about-area::before {
@@ -157,7 +194,7 @@
             position: absolute;
             left: 0; top: 0; bottom: 0;
             width: 4px;
-            background: linear-gradient(to bottom, var(--accent-green), #00ffcc);
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
             box-shadow: 0 0 10px var(--accent-green);
         }
 
@@ -484,6 +521,7 @@
             display: flex;
             flex-direction: column;
             height: 260px; 
+            transition: transform 0.3s, border-color 0.3s, background-color 0.3s;
         }
 
         .media-card:hover {
@@ -895,6 +933,11 @@
                 <h1>KNGLRP <span>Gallery</span></h1>
             </div>
             <div class="controls-area">
+                <!-- RGB / TEMA DEĞİŞTİRME BUTONU -->
+                <button id="themeToggleBtn" class="theme-toggle-btn" title="RGB Modu / Tema Değiştir">
+                    <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+                </button>
+
                 <input type="text" id="searchInput" placeholder="Tag araması yap (Tüm sayfalarda)...">
                 
                 <select id="sortSelect">
@@ -910,9 +953,6 @@
             </div>
         </header>
 
-        <!-- ==========================================
-             KNGLRP HAKKINDA / TANITIM ALANI
-             ========================================== -->
         <section class="about-area">
             <div class="about-title">
                 <span>[//_ KNGLRP_MISSION_CONTROL]</span>
@@ -958,12 +998,12 @@
                     </div>
                 </div>
                 <div class="form-right">
-                    <div class="divider-text">Link İle Yükleme </div>
-                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise  alt satıra geçebilirsiniz."></textarea>
+                    <div class="divider-text">Link With Teleport</div>
+                    <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise alt satıra geçebilirsiniz."></textarea>
                     <div class="divider-text">Etiket Ekle</div>
                     <input type="text" id="tagInput" placeholder="(İsteğe bağlı, virgülle ayırın: lspd, car)">
                     <div class="progress-container" id="uploadProgressContainer"><div class="progress-bar" id="uploadProgressBar"></div></div>
-                    <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 166px; padding: 16px;">Görsel Yükle</button>
+                    <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 16px;">Görsel Yükle</button>
                 </div>
             </div>
             <p id="uploadStatus" style="margin-top: 16px; font-size: 13px; font-weight: 600; text-align: center; color: var(--accent-green);"></p>
@@ -1068,6 +1108,7 @@
         const exitAdminModeBtn = document.getElementById('exitAdminModeBtn');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
         const paginationContainer = document.getElementById('paginationContainer');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
         
         const passwordModal = document.getElementById('passwordModal');
         const closePassModalBtn = document.getElementById('closePassModalBtn');
@@ -1103,6 +1144,29 @@
         const loggerHeader = document.getElementById('loggerHeader');
         const loggerToggleBtn = document.getElementById('loggerToggleBtn');
 
+        // ==========================================
+        // TEMA MOTORU ÇALIŞTIRMA SCRIPT'I
+        // ==========================================
+        const savedTheme = localStorage.getItem('kngl_site_theme') || 'default';
+        if (savedTheme === 'cyber-purple') {
+            document.documentElement.setAttribute('data-theme', 'cyber-purple');
+        }
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'cyber-purple') {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('kngl_site_theme', 'default');
+                    addLog('Sistem teması değiştirildi: Neon Yeşil (Default)', 'info');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'cyber-purple');
+                    localStorage.setItem('kngl_site_theme', 'cyber-purple');
+                    addLog('Sistem teması değiştirildi: Siber Mor (Neon Night)', 'info');
+                }
+            });
+        }
+
         if (sessionStorage.getItem('kngl_admin_session') === 'true') {
             isAdminActive = true;
             if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
@@ -1116,9 +1180,6 @@
             });
         }
 
-        // ==========================================
-        // KOPYALAMA VE İNDİRME MOTORU
-        // ==========================================
         window.copyImageLink = function(e, url) {
             if (e) e.stopPropagation(); 
             navigator.clipboard.writeText(url).then(() => {
@@ -1151,9 +1212,6 @@
             }
         };
 
-        // ==========================================
-        // LIGHTBOX DETAY VE NAVİGASYON MOTORU
-        // ==========================================
         window.openLightbox = function(url) {
             if (!url) return;
             currentLightboxIndex = filteredData.findIndex(item => item.image_url === url);
@@ -1228,9 +1286,6 @@
             }
         });
 
-        // ==========================================
-        // LAZY BLUR TETİKLEYİCİ FONKSİYON
-        // ==========================================
         window.triggerLazyBlur = function(imgElement) {
             if (imgElement.complete) {
                 imgElement.classList.add('loaded');
@@ -1243,9 +1298,6 @@
             }
         };
 
-        // ==========================================
-        // YÖNETİCİ PANELİ GİRİŞ / ÇIKIŞ İŞLEMLERİ
-        // ==========================================
         if (mainActionBtn) {
             mainActionBtn.addEventListener('click', function() {
                 if (isAdminActive) {
@@ -1295,7 +1347,6 @@
             });
         }
 
-        // Storage Silme
         async function removeFileFromStorage(imageUrl) {
             if (!imageUrl || !imageUrl.includes('/storage/v1/object/public/gallery/')) return true;
             try {
@@ -1312,9 +1363,6 @@
             } catch (err) { return false; }
         }
 
-        // ==========================================
-        // GÖRSEL DOSYA ÖNİZLEME VE DOSYA SÜRÜKLEME
-        // ==========================================
         function handleFilesSelection(files) {
             let addedCount = 0;
             for (let i = 0; i < files.length; i++) {
@@ -1387,9 +1435,6 @@
             }
         }
 
-        // ==========================================
-        // VERİ TABANINA GÖRSEL GÖNDERME MOTORU
-        // ==========================================
         if (uploadBtn) {
             uploadBtn.addEventListener('click', async () => {
                 const linkInputRaw = document.getElementById('linkInput').value;
@@ -1457,9 +1502,6 @@
             });
         }
 
-        // ==========================================
-        // VERİLERİ ÇEKME, FİLTRELEME VE YENİLEME
-        // ==========================================
         async function fetchGalleryData() {
             if (!galleryGrid || !knglSupaClient) return;
             try {
