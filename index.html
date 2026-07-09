@@ -59,7 +59,7 @@
 
         /* Mor temaya geçildiğinde partiküllerin rengini de mor yapalım */
         [data-theme="cyber-purple"] .particle {
-            background: linear-gradient(135deg, var(--accent-purple), transparent);
+            background: linear-gradient(135deg, var(--accent-green), transparent);
         }
 
         /* Partikül Yukarı Süzülme Animasyonu */
@@ -1009,7 +1009,6 @@
     </style>
 </head>
 <body>
-    <!-- Siber Arka Plan Partikül Yapısı -->
     <div id="cyber-particles"></div>
 
     <div class="container">
@@ -1019,9 +1018,7 @@
                 <h1>KNGLRP <span>Gallery</span></h1>
             </div>
             <div class="controls-area">
-                <!-- RGB / TEMA DEĞİŞTİRME BUTONU (DİNAMİK SİMGELİ) -->
                 <button id="themeToggleBtn" class="theme-toggle-btn" title="RGB Modu / Tema Değiştir">
-                    <!-- Güneş Simgesi (Yeşil Tema için) -->
                     <svg class="icon-sun" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -1033,20 +1030,17 @@
                         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                    <!-- Ay Simgesi (Mor Tema için) -->
                     <svg class="icon-moon" viewBox="0 0 24 24">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
                 <input type="text" id="searchInput" placeholder="Tag araması yap (Tüm sayfalarda)...">
-                
                 <select id="sortSelect">
                     <option value="newest">En Yeni Önce</option>
                     <option value="oldest">En Eski Önce</option>
                     <option value="alpha-asc">A -> Z (Etiketli Başa)</option>
                     <option value="alpha-desc">Z -> A (Etiketli Başa)</option>
                 </select>
-
                 <button id="deleteSelectedBtn" class="btn-danger" style="display: none;">Seçilenleri Sil (0)</button>
                 <button id="mainActionBtn">Resim Yükle</button>
                 <button id="exitAdminModeBtn" class="btn-secondary" style="display: none;">Admin Kapat</button>
@@ -1063,7 +1057,7 @@
         </section>
 
         <main id="galleryGrid" class="gallery-grid"></main>
-        
+
         <div class="pagination-container" id="paginationContainer"></div>
     </div>
 
@@ -1086,6 +1080,7 @@
             <button class="modal-close-btn" id="closeUploadModalBtn">&times;</button>
             <div class="modal-header-area"><h2>Görsel Yükleme Paneli</h2></div>
             <p class="panel-desc">Seçtiğiniz medyalar anında sunucu ağında arka plana işlenir.</p>
+            
             <div class="upload-grid">
                 <div class="form-left">
                     <div class="divider-text">Yerel Dosya Seçimi</div>
@@ -1093,16 +1088,23 @@
                         <span id="dropZoneText">Birden fazla görsel sürükleyin veya TIKLAYIP seçin</span>
                         <input type="file" id="fileInput" accept="image/*" multiple hidden>
                     </div>
+                    
                     <div class="preview-wrapper" id="previewWrapper" style="display: none;">
                         <div class="preview-container" id="previewContainer"></div>
                     </div>
                 </div>
+                
                 <div class="form-right">
                     <div class="divider-text">Link With Teleport</div>
                     <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise alt satıra geçebilirsiniz."></textarea>
+                    
                     <div class="divider-text">Etiket Ekle</div>
                     <input type="text" id="tagInput" placeholder="(İsteğe bağlı, virgülle ayırın: lspd, car)">
-                    <div class="progress-container" id="uploadProgressContainer"><div class="progress-bar" id="uploadProgressBar"></div></div>
+                    
+                    <div class="progress-container" id="uploadProgressContainer">
+                        <div class="progress-bar" id="uploadProgressBar"></div>
+                    </div>
+                    
                     <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 16px;">Görsel Yükle</button>
                 </div>
             </div>
@@ -1112,12 +1114,11 @@
 
     <div id="lightboxOverlay" class="lightbox-overlay">
         <div class="lightbox-wrapper">
-            
             <div class="lightbox-media-side">
                 <button class="lightbox-nav-btn lightbox-prev" id="lightboxPrevBtn">‹</button>
                 <img id="lightboxImg" src="" alt="Önizleme" draggable="false">
                 <button class="lightbox-nav-btn lightbox-next" id="lightboxNextBtn">›</button>
-
+                
                 <div class="lightbox-top-actions">
                     <button class="lightbox-action-btn" title="Detay Panelini Aç/Kapat" id="lightboxInfoBtn">
                         <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
@@ -1126,715 +1127,153 @@
                         <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                     </button>
                     <button class="lightbox-action-btn" title="Görseli İndir" id="lightboxDownloadBtn">
-                        <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 11h4.17v4h5v-4h4.17L12 2z"/></svg>
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
                     </button>
-                    <button class="lightbox-close-text-btn" id="closeLightboxBtn">&times;</button>
+                    <button class="lightbox-close-text-btn" id="lightboxCloseBtn">&times;</button>
                 </div>
             </div>
-
+            
             <div class="lightbox-details-side" id="lightboxDetailsSide">
-                <div class="details-title">Görsel Bilgileri</div>
+                <div class="details-title">Görsel Veri Analitiği</div>
                 
                 <div class="detail-item">
-                    <div class="detail-item-label">Yüklenme Tarihi</div>
-                    <div class="detail-item-value" id="detailDate">-</div>
+                    <div class="detail-item-label">Sistem ID</div>
+                    <div class="detail-item-value" id="detailId" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent-green);">#----</div>
                 </div>
-
+                
                 <div class="detail-item">
-                    <div class="detail-item-label">Medya Etiketleri</div>
+                    <div class="detail-item-label">Yükleme Tarihi</div>
+                    <div class="detail-item-value" id="detailDate">--.--.---- --:--</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-item-label">Aktif Etiketler</div>
                     <div class="lightbox-details-tags" id="detailTags">
-                        <span class="tag">#yok</span>
+                        <span class="tag">yok</span>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <div class="live-logger-panel collapsed" id="liveLoggerPanel">
+    <div id="liveLoggerPanel" class="live-logger-panel collapsed">
         <div class="logger-header" id="loggerHeader">
-            <span>Sistem Log Paneli</span>
-            <span class="logger-toggle-btn" id="loggerToggleBtn">[+]</span>
+            <span>[//_ SYSTEM_LOG_STREAM]</span>
+            <span class="logger-toggle-btn" id="loggerToggleBtn">GÖSTER</span>
         </div>
         <div class="logger-body" id="loggerBody"></div>
     </div>
 
     <script>
         // ==========================================
-        // 1. SUPABASE AYARLARI VE KÜRESEL DEĞİŞKENLER
+        // SUPABASE BAĞLANTI AYARLARI
         // ==========================================
-        const MY_SUPABASE_TARGET_URL = 'https://rqtlwqphwfjlysnwkpel.supabase.co';
-        const MY_SUPABASE_TARGET_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGx3cXBod2ZqbHlzbndrcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzNDEyNzIsImV4cCI6MjA5ODkxNzI3Mn0.0Xx7BJe0O5VB5uZIZL8LCqOMTTWvSBnGKtGTY6kQGpY';
+        const SUPABASE_URL = "https://wzbcshclbexfctaswtbc.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6YmNzaGNsYmV4ZmN0YXN3dGJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwNTI0MzksImV4cCI6MjA1NTYyODQzOX0.9_gXlshK_LpxV0bHjG51Y0gH0109Z0-k3-lM6vVv9kY";
         
-        let knglSupaClient = null; 
-        let isAdminActive = false; 
-        let selectedFilesQueue = []; 
-        let allGalleryData = []; 
-        let filteredData = [];   
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ==========================================
+        // GLOBAL DEĞİŞKENLER VE SAYFALAMA
+        // ==========================================
+        let allGalleryItems = [];
+        let filteredGalleryItems = [];
         let currentPage = 1;
-        const itemsPerPage = 50;
+        const itemsPerPage = 15;
         let currentLightboxIndex = -1;
+        let isAdmin = false;
+        let isSelectionMode = false;
+        let selectedItemIds = new Set();
 
-        function addLog(text, type = 'info') {
-            const loggerBody = document.getElementById('loggerBody');
-            if (!loggerBody) return;
-            const time = new Date().toLocaleTimeString();
-            const logLine = document.createElement('div');
-            logLine.className = `log-line ${type}`;
-            let prefix = '⚙️ [BİLGİ]';
-            switch(type) {
-                case 'success': prefix = '✅ [BAŞARILI]'; break;
-                case 'error': prefix = '❌ [KRİTİK HATA]'; break;
-                case 'warn': prefix = '⚠️ [UYARI]'; break;
-                case 'storage': prefix = '📦 [DEPOLAMA]'; break;
-            }
-            logLine.innerHTML = `<span class="log-meta">${time} - ${prefix}</span><span>${text}</span>`;
-            loggerBody.appendChild(logLine);
-            loggerBody.scrollTop = loggerBody.scrollHeight;
-        }
-
-        try {
-            if (window.supabase && MY_SUPABASE_TARGET_URL && MY_SUPABASE_TARGET_URL.startsWith('http')) {
-                knglSupaClient = window.supabase.createClient(MY_SUPABASE_TARGET_URL, MY_SUPABASE_TARGET_KEY);
-                addLog('Supabase altyapısı başarılı şekilde başlatıldı.', 'success');
-            }
-        } catch(e) { addLog('Supabase API başlatma hatası: ' + e.message, 'error'); }
-
-        // DOM Elemanları
-        const galleryGrid = document.getElementById('galleryGrid');
-        const searchInput = document.getElementById('searchInput');
-        const sortSelect = document.getElementById('sortSelect');
-        const mainActionBtn = document.getElementById('mainActionBtn');
-        const exitAdminModeBtn = document.getElementById('exitAdminModeBtn');
-        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-        const paginationContainer = document.getElementById('paginationContainer');
+        // DOM Elementleri
         const themeToggleBtn = document.getElementById('themeToggleBtn');
-        
+        const mainActionBtn = document.getElementById('mainActionBtn');
         const passwordModal = document.getElementById('passwordModal');
-        const closePassModalBtn = document.getElementById('closePassModalBtn');
-        const passwordInput = document.getElementById('passwordInput');
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        
         const uploadModal = document.getElementById('uploadModal');
+        const closePassModalBtn = document.getElementById('closePassModalBtn');
         const closeUploadModalBtn = document.getElementById('closeUploadModalBtn');
+        const loginForm = document.getElementById('loginForm');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginError = document.getElementById('loginError');
+        const exitAdminModeBtn = document.getElementById('exitAdminModeBtn');
         
-        const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
+        const dropZone = document.getElementById('dropZone');
         const previewWrapper = document.getElementById('previewWrapper');
         const previewContainer = document.getElementById('previewContainer');
+        const linkInput = document.getElementById('linkInput');
+        const tagInput = document.getElementById('tagInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadStatus = document.getElementById('uploadStatus');
         const uploadProgressContainer = document.getElementById('uploadProgressContainer');
         const uploadProgressBar = document.getElementById('uploadProgressBar');
 
-        // Lightbox Elemanları
+        const galleryGrid = document.getElementById('galleryGrid');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+
         const lightboxOverlay = document.getElementById('lightboxOverlay');
         const lightboxImg = document.getElementById('lightboxImg');
-        const closeLightboxBtn = document.getElementById('closeLightboxBtn');
         const lightboxPrevBtn = document.getElementById('lightboxPrevBtn');
         const lightboxNextBtn = document.getElementById('lightboxNextBtn');
+        const lightboxCloseBtn = document.getElementById('lightboxCloseBtn');
         const lightboxCopyBtn = document.getElementById('lightboxCopyBtn');
         const lightboxDownloadBtn = document.getElementById('lightboxDownloadBtn');
         const lightboxInfoBtn = document.getElementById('lightboxInfoBtn');
         const lightboxDetailsSide = document.getElementById('lightboxDetailsSide');
+        
+        const detailId = document.getElementById('detailId');
         const detailDate = document.getElementById('detailDate');
         const detailTags = document.getElementById('detailTags');
 
         const liveLoggerPanel = document.getElementById('liveLoggerPanel');
         const loggerHeader = document.getElementById('loggerHeader');
         const loggerToggleBtn = document.getElementById('loggerToggleBtn');
+        const loggerBody = document.getElementById('loggerBody');
+
+        let queuedFiles = [];
 
         // ==========================================
-        // TEMA MOTORU ÇALIŞTIRMA SCRIPT'I
+        // CANLI LOG SİSTEMİ (LOG STREAM)
         // ==========================================
-        const savedTheme = localStorage.getItem('kngl_site_theme') || 'default';
-        if (savedTheme === 'cyber-purple') {
-            document.documentElement.setAttribute('data-theme', 'cyber-purple');
-        }
-
-        if (themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                if (currentTheme === 'cyber-purple') {
-                    document.documentElement.removeAttribute('data-theme');
-                    localStorage.setItem('kngl_site_theme', 'default');
-                    addLog('Sistem teması değiştirildi: Neon Yeşil (Default)', 'info');
-                } else {
-                    document.documentElement.setAttribute('data-theme', 'cyber-purple');
-                    localStorage.setItem('kngl_site_theme', 'cyber-purple');
-                    addLog('Sistem teması değiştirildi: Siber Mor (Neon Night)', 'info');
-                }
-            });
-        }
-
-        if (sessionStorage.getItem('kngl_admin_session') === 'true') {
-            isAdminActive = true;
-            if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
-            addLog('Mevcut tarayıcı oturumunda aktif admin session saptandı.', 'info');
-        }
-
-        if (loggerHeader) {
-            loggerHeader.addEventListener('click', function() {
-                liveLoggerPanel.classList.toggle('collapsed');
-                loggerToggleBtn.innerText = liveLoggerPanel.classList.contains('collapsed') ? '[+]' : '[-]';
-            });
-        }
-
-        window.copyImageLink = function(e, url) {
-            if (e) e.stopPropagation(); 
-            navigator.clipboard.writeText(url).then(() => {
-                addLog(`Görsel adresi panoya kopyalandı: ${url.substring(0, 45)}...`, 'success');
-                alert('Görsel adresi panoya kopyalandı!');
-            }).catch(() => {
-                addLog('Panoya kopyalama işlemi başarısız oldu.', 'warn');
-                alert('Kopyalama başarısız oldu.');
-            });
-        };
-
-        window.downloadImage = async function(e, url) {
-            if (e) e.stopPropagation();
-            addLog(`Görsel indirme isteği başlatıldı. Kaynak: ${url.substring(0, 40)}...`, 'info');
-            try {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = `kngl_media_${Date.now()}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(blobUrl);
-                addLog('Görsel yerel diske başarıyla indirildi.', 'success');
-            } catch (err) {
-                addLog('Doğrudan indirme başarısız, yeni sekmede açılıyor.', 'warn');
-                window.open(url, '_blank');
-            }
-        };
-
-        window.openLightbox = function(url) {
-            if (!url) return;
-            currentLightboxIndex = filteredData.findIndex(item => item.image_url === url);
-            addLog(`Lightbox açıldı. Seçili görsel sırası: [${currentLightboxIndex + 1}]`, 'info');
-            updateLightboxContent();
-            lightboxOverlay.style.display = 'flex';
-        };
-
-        function updateLightboxContent() {
-            if (currentLightboxIndex === -1 || !filteredData[currentLightboxIndex]) return;
-            const currentItem = filteredData[currentLightboxIndex];
+        function addLog(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `log-line ${type}`;
             
-            lightboxImg.src = currentItem.image_url;
+            const meta = document.createElement('span');
+            meta.className = 'log-meta';
+            const now = new Date();
+            meta.textContent = `[${now.toLocaleTimeString()}.${String(now.getMilliseconds()).padStart(3, '0')}]`;
+            
+            const text = document.createElement('span');
+            text.textContent = message;
+            
+            line.appendChild(meta);
+            line.appendChild(text);
+            loggerBody.appendChild(line);
+            
+            loggerBody.scrollTop = loggerBody.scrollHeight;
+        }
 
-            if (currentItem.created_at) {
-                const dateObj = new Date(currentItem.created_at);
-                detailDate.innerText = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+        loggerHeader.addEventListener('click', () => {
+            liveLoggerPanel.classList.toggle('collapsed');
+            if(liveLoggerPanel.classList.contains('collapsed')) {
+                loggerToggleBtn.textContent = "GÖSTER";
             } else {
-                detailDate.innerText = "Bilinmiyor";
-            }
-
-            const tagsRaw = currentItem.tags || '';
-            if (tagsRaw.trim()) {
-                detailTags.innerHTML = tagsRaw.split(',').map(t => `<span class="tag">#${t.trim()}</span>`).join('');
-            } else {
-                detailTags.innerHTML = '<span class="tag" style="opacity: 0.5;">#etiket-yok</span>';
-            }
-        }
-
-        function navigateLightbox(direction) {
-            if (filteredData.length === 0 || currentLightboxIndex === -1) return;
-            if (direction === 'next') {
-                currentLightboxIndex = (currentLightboxIndex + 1) % filteredData.length;
-            } else if (direction === 'prev') {
-                currentLightboxIndex = (currentLightboxIndex - 1 + filteredData.length) % filteredData.length;
-            }
-            addLog(`Görsel değiştirildi, yeni index: [${currentLightboxIndex + 1}]`, 'info');
-            updateLightboxContent();
-        }
-
-        if (lightboxInfoBtn) {
-            lightboxInfoBtn.addEventListener('click', () => {
-                lightboxDetailsSide.classList.toggle('collapsed');
-                addLog('Lightbox detay paneli görünürlüğü tetiklendi.', 'info');
-            });
-        }
-
-        if (lightboxCopyBtn) {
-            lightboxCopyBtn.addEventListener('click', (e) => {
-                if (currentLightboxIndex !== -1) copyImageLink(e, filteredData[currentLightboxIndex].image_url);
-            });
-        }
-
-        if (lightboxDownloadBtn) {
-            lightboxDownloadBtn.addEventListener('click', (e) => {
-                if (currentLightboxIndex !== -1) downloadImage(e, filteredData[currentLightboxIndex].image_url);
-            });
-        }
-
-        if (lightboxNextBtn) lightboxNextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox('next'); });
-        if (lightboxPrevBtn) lightboxPrevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox('prev'); });
-        if (closeLightboxBtn) closeLightboxBtn.addEventListener('click', () => { lightboxOverlay.style.display = 'none'; addLog('Lightbox kapatıldı.', 'info'); });
-        if (lightboxOverlay) {
-            lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) { lightboxOverlay.style.display = 'none'; addLog('Lightbox arka plana tıklanarak kapatıldı.', 'info'); } });
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (lightboxOverlay.style.display === 'flex') {
-                if (e.key === 'ArrowRight') navigateLightbox('next');
-                if (e.key === 'ArrowLeft') navigateLightbox('prev');
-                if (e.key === 'Escape') { lightboxOverlay.style.display = 'none'; addLog('Lightbox Escape tuşu ile kapatıldı.', 'info'); }
+                loggerToggleBtn.textContent = "GİZLE";
             }
         });
 
-        window.triggerLazyBlur = function(imgElement) {
-            if (imgElement.complete) {
-                imgElement.classList.add('loaded');
-                imgElement.parentElement.classList.add('done-blur');
-            } else {
-                imgElement.addEventListener('load', function() {
-                    imgElement.classList.add('loaded');
-                    imgElement.parentElement.classList.add('done-blur');
-                });
-            }
-        };
-
-        if (mainActionBtn) {
-            mainActionBtn.addEventListener('click', function() {
-                if (isAdminActive) {
-                    uploadModal.style.display = 'flex';
-                } else {
-                    if (loginError) loginError.style.display = 'none';
-                    if (passwordInput) { passwordInput.value = ''; passwordInput.focus(); }
-                    passwordModal.style.display = 'flex';
-                    addLog('Yönetici paneli giriş ekranı çağrıldı.', 'info');
-                }
-            });
-        }
-
-        if (closePassModalBtn) closePassModalBtn.addEventListener('click', () => passwordModal.style.display = 'none');
-        if (closeUploadModalBtn) closeUploadModalBtn.addEventListener('click', () => uploadModal.style.display = 'none');
-        window.addEventListener('click', (e) => { 
-            if (e.target === passwordModal) passwordModal.style.display = 'none'; 
-            if (e.target === uploadModal) uploadModal.style.display = 'none'; 
-        });
-
-        function handleLogin() {
-            if (passwordInput && passwordInput.value === 'nieves1312') {
-                isAdminActive = true;
-                sessionStorage.setItem('kngl_admin_session', 'true');
-                passwordModal.style.display = 'none';
-                uploadModal.style.display = 'flex';
-                if (exitAdminModeBtn) exitAdminModeBtn.style.display = 'inline-flex';
-                addLog('Admin yetkilendirmesi başarıyla doğrulandı.', 'success');
-                refreshGalleryUI(); 
-            } else {
-                if (loginError) loginError.style.display = 'block';
-                addLog('Yetkilendirme hatası: Geçersiz şifre denemesi yapıldı.', 'error');
-            }
-        }
-
-        if (loginForm) loginForm.addEventListener('submit', (e) => { e.preventDefault(); handleLogin(); });
-
-        if (exitAdminModeBtn) {
-            exitAdminModeBtn.addEventListener('click', function() {
-                isAdminActive = false;
-                sessionStorage.removeItem('kngl_admin_session');
-                exitAdminModeBtn.style.display = 'none';
-                uploadModal.style.display = 'none';
-                if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
-                refreshGalleryUI();
-                addLog('Yönetici oturumu güvenli kapatıldı, kullanıcı moduna geçildi.', 'warn');
-            });
-        }
-
-        async function removeFileFromStorage(imageUrl) {
-            if (!imageUrl || !imageUrl.includes('/storage/v1/object/public/gallery/')) return true;
-            try {
-                const fileName = imageUrl.split('/gallery/').pop();
-                if (!fileName) return false;
-                addLog(`Depolama biriminden fiziksel silme talep edildi: ${fileName}`, 'storage');
-                const { error } = await knglSupaClient.storage.from('gallery').remove([fileName]);
-                if (error) {
-                    addLog(`Fiziksel dosya silinemedi: ${error.message}`, 'error');
-                    return false;
-                }
-                addLog(`Dosya siber sunucudan tamamen temizlendi: ${fileName}`, 'success');
-                return true;
-            } catch (err) { return false; }
-        }
-
-        function handleFilesSelection(files) {
-            let addedCount = 0;
-            for (let i = 0; i < files.length; i++) {
-                if (files[i].type.startsWith('image/')) {
-                    selectedFilesQueue.push({
-                        id: Date.now() + '_' + Math.random().toString(36).substring(4),
-                        file: files[i],
-                        customTag: ''
-                    });
-                    addedCount++;
-                }
-            }
-            addLog(`Sıraya ${addedCount} adet yerel dosya eklendi.`, 'info');
-            renderPreviews();
-        }
-
-        function renderPreviews() {
-            if (!previewContainer || !previewWrapper) return;
-            previewContainer.innerHTML = '';
-            if (selectedFilesQueue.length === 0) { previewWrapper.style.display = 'none'; return; }
-            previewWrapper.style.display = 'block';
-
-            selectedFilesQueue.forEach((itemData) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const row = document.createElement('div');
-                    row.className = 'preview-row';
-                    row.innerHTML = `
-                        <div class="preview-item"><img src="${e.target.result}" alt="Önizleme"></div>
-                        <input type="text" class="inline-tag-input" placeholder="Bu görsele özel etiket" value="${itemData.customTag}">
-                        <button class="remove-preview-btn" data-id="${itemData.id}">&times;</button>
-                    `;
-                    row.querySelector('.inline-tag-input').addEventListener('input', (ev) => itemData.customTag = ev.target.value);
-                    row.querySelector('.remove-preview-btn').addEventListener('click', function(ev) {
-                        ev.stopPropagation();
-                        selectedFilesQueue = selectedFilesQueue.filter(x => x.id !== this.getAttribute('data-id'));
-                        addLog('Yükleme kuyruğundaki bir görsel listeden kaldırıldı.', 'warn');
-                        renderPreviews();
-                    });
-                    previewContainer.appendChild(row);
-                }
-                reader.readAsDataURL(itemData.file);
-            });
-        }
-
-        if (dropZone) {
-            dropZone.addEventListener('click', () => fileInput && fileInput.click());
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer?.files.length) handleFilesSelection(e.dataTransfer.files); });
-        }
-        if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files?.length) handleFilesSelection(e.target.files); });
-
-        async function fetchImageAndUploadToStorage(url, generalTags) {
-            try {
-                addLog(`Harici URL proxy depolamaya taşınıyor: ${url.substring(0, 45)}...`, 'storage');
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("Dosya indirilemedi");
-                const blob = await res.blob();
-                const fileExt = blob.type.split('/')[1] || 'jpg';
-                const fileName = `url_import_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, blob, { contentType: blob.type });
-                if (upErr) throw upErr;
-                const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
-                addLog(`URL import başarıyla kalıcı depolamaya alındı: ${fileName}`, 'success');
-                return data.publicUrl;
-            } catch (err) { 
-                addLog(`URL kopyalama/taşıma hatası: ${err.message || err}. Doğrudan link kullanılacak.`, 'warn');
-                return url; 
-            }
-        }
-
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', async () => {
-                const linkInputRaw = document.getElementById('linkInput').value;
-                const generalTags = document.getElementById('tagInput').value.trim();
-                const statusText = document.getElementById('uploadStatus');
-                if (!knglSupaClient) return addLog('Supabase bağlantısı kopuk, işlem iptal edildi.', 'error');
-                
-                let linkUrls = [];
-                if (linkInputRaw.trim()) {
-                    linkUrls = linkInputRaw.split(/[\n,]+/).map(url => url.trim()).filter(url => url.startsWith('http'));
-                }
-
-                if (selectedFilesQueue.length === 0 && linkUrls.length === 0) return alert('Dosya seçin veya link girin.');
-
-                statusText.innerText = "Yükleniyor, lütfen bekleyin...";
-                uploadProgressContainer.style.display = 'block';
-                uploadProgressBar.style.width = '0%';
-                
-                addLog(`Kolektif yükleme işlemi başlatıldı. (${linkUrls.length} URL, ${selectedFilesQueue.length} Yerel Dosya)`, 'info');
-
-                if (linkUrls.length > 0) {
-                    for (let k = 0; k < linkUrls.length; k++) {
-                        const permanentUrl = await fetchImageAndUploadToStorage(linkUrls[k], generalTags);
-                        const { error: insErr } = await knglSupaClient.from('gallery_images').insert([{ image_url: permanentUrl, tags: generalTags || '' }]);
-                        if(insErr) addLog(`URL SQL kaydı hatası: ${insErr.message}`, 'error');
-                        else addLog(`[${k+1}/${linkUrls.length}] URL kaydı veritabanına işlendi.`, 'success');
-                        uploadProgressBar.style.width = `${Math.round(((k + 1) / linkUrls.length) * 100)}%`;
-                    }
-                    document.getElementById('linkInput').value = '';
-                }
-
-                if (selectedFilesQueue.length > 0) {
-                    for (let i = 0; i < selectedFilesQueue.length; i++) {
-                        const item = selectedFilesQueue[i];
-                        const file = item.file;
-                        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
-                        
-                        addLog(`[${i+1}/${selectedFilesQueue.length}] Yerel dosya yükleniyor: ${file.name}`, 'storage');
-                        const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
-                        
-                        if(upErr) {
-                            addLog(`Dosya yükleme başarısız: ${file.name} - ${upErr.message}`, 'error');
-                            continue;
-                        }
-
-                        const finalTags = item.customTag.trim() ? item.customTag.trim() : generalTags;
-                        const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
-                        
-                        const { error: insErr } = await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: finalTags }]);
-                        if(insErr) addLog(`Dosya veritabanı indeks hatası: ${insErr.message}`, 'error');
-                        else addLog(`Dosya başarıyla indekslendi ve yayına alındı.`, 'success');
-                        
-                        uploadProgressBar.style.width = `${Math.round(((i + 1) / selectedFilesQueue.length) * 100)}%`;
-                    }
-                    selectedFilesQueue = [];
-                    renderPreviews();
-                }
-
-                setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1000);
-                statusText.innerText = 'Tüm medyalar yüklendi!';
-                document.getElementById('tagInput').value = '';
-                currentPage = 1;
-                fetchGalleryData();
-                setTimeout(() => statusText.innerText = '', 3000);
-            });
-        }
-
-        async function fetchGalleryData() {
-            if (!galleryGrid || !knglSupaClient) return;
-            try {
-                addLog('Veritabanından güncel galeri kayıtları talep ediliyor...', 'info');
-                const { data, error } = await knglSupaClient.from('gallery_images').select('*');
-                if (error) {
-                    addLog(`Veri çekme hatası: ${error.message}`, 'error');
-                    return;
-                }
-                allGalleryData = data || [];
-                addLog(`Sistem veritabanından toplam ${allGalleryData.length} görsel başarıyla çekildi.`, 'success');
-                applyFiltersAndSorting();
-            } catch (err) { addLog(`Beklenmeyen sistem hatası: ${err.message}`, 'error'); }
-        }
-
-        function applyFiltersAndSorting() {
-            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const sortOrder = sortSelect ? sortSelect.value : 'newest';
-
-            if (searchTerm) {
-                addLog(`Etiket arama filtresi devrede: "${searchTerm}"`, 'info');
-            }
-
-            filteredData = allGalleryData.filter(item => (item.tags || '').toLowerCase().includes(searchTerm));
-
-            if (sortOrder === 'newest') {
-                filteredData.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-            } else if (sortOrder === 'oldest') {
-                filteredData.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
-            } else if (sortOrder === 'alpha-asc' || sortOrder === 'alpha-desc') {
-                filteredData.sort((a, b) => {
-                    const tagA = (a.tags || '').trim();
-                    const tagB = (b.tags || '').trim();
-                    if (!tagA && !tagB) return 0;
-                    if (!tagA) return 1;  
-                    if (!tagB) return -1; 
-                    return sortOrder === 'alpha-asc' ? tagA.localeCompare(tagB, 'tr') : tagB.localeCompare(tagA, 'tr');
-                });
-            }
-            refreshGalleryUI();
-        }
-
-        function refreshGalleryUI() {
-            galleryGrid.innerHTML = '';
-            if (filteredData.length === 0) {
-                galleryGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--text-gray); padding: 40px;">Görsel bulunamadı.</p>';
-                if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
-                if (paginationContainer) paginationContainer.innerHTML = '';
-                return;
-            }
-
-            if (isAdminActive && deleteSelectedBtn) deleteSelectedBtn.style.display = 'inline-flex';
-            
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            if (currentPage > totalPages) currentPage = totalPages || 1;
-
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageItems = filteredData.slice(startIndex, endIndex);
-
-            const adminDisplay = isAdminActive ? 'block' : 'none';
-
-            pageItems.forEach(item => {
-                const currentTags = item.tags || '';
-                const tagsHtml = currentTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
-                
-                const card = document.createElement('div');
-                card.className = 'media-card';
-                card.setAttribute('data-id', item.id);
-
-                card.innerHTML = `
-                    <input type="checkbox" class="card-select-checkbox" style="display: ${adminDisplay}" data-id="${item.id}">
-                    <button class="delete-card-btn" style="display: ${adminDisplay}" data-id="${item.id}"></button>
-                    
-                    <div class="card-actions-overlay" style="${isAdminActive ? 'display:none;' : 'display:flex;'}">
-                        <button class="card-action-btn" title="Linki Kopyala" onclick="copyImageLink(event, '${item.image_url}')">
-                            <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                        </button>
-                        <button class="card-action-btn" title="Görseli İndir" onclick="downloadImage(event, '${item.image_url}')">
-                            <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 11h4.17v4h5v-4h4.17L12 2z"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="img-container">
-                        <img src="${item.image_url}" alt="KNGLRP Media" onload="triggerLazyBlur(this)">
-                        <div class="card-tags-overlay" style="${isAdminActive ? 'display:none;' : (currentTags.trim() ? 'display:flex;' : 'display:none;')}">
-                            ${tagsHtml}
-                        </div>
-                    </div>
-                    <div class="admin-tag-edit-area" style="display: ${adminDisplay}">
-                        <input type="text" class="admin-tag-input" value="${currentTags}">
-                    </div>
-                `;
-
-                card.addEventListener('click', (e) => {
-                    const checkbox = card.querySelector('.card-select-checkbox');
-                    if (e.target === checkbox || e.target.classList.contains('delete-card-btn') || e.target.classList.contains('admin-tag-input') || e.target.closest('.card-action-btn')) return;
-
-                    if (isAdminActive) {
-                        checkbox.checked = !checkbox.checked;
-                        card.classList.toggle('selected', checkbox.checked);
-                        updateSelectedCount();
-                    } else {
-                        openLightbox(item.image_url);
-                    }
-                });
-
-                const inlineTagInput = card.querySelector('.admin-tag-input');
-                if (inlineTagInput) {
-                    inlineTagInput.addEventListener('blur', function() {
-                        if (this.value !== item.tags) updateCardTagsInDatabase(item.id, this.value, card);
-                    });
-                    inlineTagInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') this.blur(); });
-                }
-
-                card.querySelector('.card-select-checkbox').addEventListener('click', (e) => {
-                    card.classList.toggle('selected', e.target.checked);
-                    updateSelectedCount();
-                });
-
-                card.querySelector('.delete-card-btn').addEventListener('click', async function() {
-                    if (!confirm('Bu görseli silmek istediğinizden emin misiniz?')) return;
-                    addLog(`Görsel silme işlemi tetiklendi. ID: ${item.id}`, 'warn');
-                    await removeFileFromStorage(item.image_url);
-                    const { error } = await knglSupaClient.from('gallery_images').delete().eq('id', item.id);
-                    if (error) {
-                        addLog(`Veritabanından silme hatası: ${error.message}`, 'error');
-                    } else {
-                        addLog(`ID: ${item.id} veritabanından tamamen silindi.`, 'success');
-                    }
-                    allGalleryData = allGalleryData.filter(x => x.id != item.id);
-                    applyFiltersAndSorting();
-                });
-
-                galleryGrid.appendChild(card);
-                
-                const img = card.querySelector('.img-container img');
-                triggerLazyBlur(img);
-            });
-
-            renderPaginationControls(totalPages);
-            updateSelectedCount();
-        }
-
-        function renderPaginationControls(totalPages) {
-            if (!paginationContainer) return;
-            paginationContainer.innerHTML = '';
-            if (totalPages <= 1) return;
-
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'pagination-btn'; prevBtn.innerText = '«'; prevBtn.disabled = currentPage === 1;
-            prevBtn.addEventListener('click', () => { currentPage--; addLog(`Sayfa değiştirildi: [${currentPage}]`, 'info'); refreshGalleryUI(); window.scrollTo(0,0); });
-            paginationContainer.appendChild(prevBtn);
-
-            for (let i = 1; i <= totalPages; i++) {
-                if (totalPages > 6 && Math.abs(currentPage - i) > 2 && i !== 1 && i !== totalPages) {
-                    if (i === 2 || i === totalPages - 1) {
-                        const dots = document.createElement('span'); dots.innerText = '...'; dots.style.color = 'var(--text-gray)'; dots.style.padding = '0 5px';
-                        paginationContainer.appendChild(dots);
-                    }
-                    continue;
-                }
-                const pageBtn = document.createElement('button');
-                pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`; pageBtn.innerText = i;
-                pageBtn.addEventListener('click', () => { currentPage = i; addLog(`Sayfa değiştirildi: [${currentPage}]`, 'info'); refreshGalleryUI(); window.scrollTo(0,0); });
-                paginationContainer.appendChild(pageBtn);
-            }
-
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'pagination-btn'; nextBtn.innerText = '»'; nextBtn.disabled = currentPage === totalPages;
-            nextBtn.addEventListener('click', () => { currentPage++; addLog(`Sayfa değiştirildi: [${currentPage}]`, 'info'); refreshGalleryUI(); window.scrollTo(0,0); });
-            paginationContainer.appendChild(nextBtn);
-        }
-
-        async function updateCardTagsInDatabase(id, newTagsValue, cardElement) {
-            const trimmedTags = newTagsValue.trim();
-            addLog(`ID: ${id} için etiket güncellemesi gönderiliyor: "${trimmedTags}"`, 'info');
-            const { error } = await knglSupaClient.from('gallery_images').update({ tags: trimmedTags }).eq('id', id);
-            if (!error) {
-                addLog(`ID: ${id} etiketleri başarıyla güncellendi.`, 'success');
-                const targetObj = allGalleryData.find(x => x.id == id);
-                if (targetObj) targetObj.tags = trimmedTags;
-                const overlay = cardElement.querySelector('.card-tags-overlay');
-                if (overlay) {
-                    if (trimmedTags) {
-                        overlay.style.display = 'flex';
-                        overlay.innerHTML = trimmedTags.split(',').map(t => t.trim() ? `<span class="tag">#${t.trim()}</span>` : '').join('');
-                    } else { overlay.style.display = 'none'; }
-                }
-            } else {
-                addLog(`Etiket güncelleme hatası: ${error.message}`, 'error');
-            }
-        }
-
-        if (searchInput) searchInput.addEventListener('input', () => { currentPage = 1; applyFiltersAndSorting(); });
-        if (sortSelect) sortSelect.addEventListener('change', () => { applyFiltersAndSorting(); });
-
-        function updateSelectedCount() {
-            const checkedBoxes = document.querySelectorAll('.card-select-checkbox:checked');
-            if (deleteSelectedBtn) {
-                deleteSelectedBtn.innerText = `Seçilenleri Sil (${checkedBoxes.length})`;
-                deleteSelectedBtn.style.display = (isAdminActive && checkedBoxes.length > 0) ? 'inline-flex' : 'none';
-            }
-        }
-
-        if (deleteSelectedBtn) {
-            deleteSelectedBtn.addEventListener('click', async function() {
-                const checkedBoxes = document.querySelectorAll('.card-select-checkbox:checked');
-                if (checkedBoxes.length === 0 || !confirm(`${checkedBoxes.length} adet görseli toplu silmek istediğinize emin misiniz?`)) return;
-                
-                addLog(`Toplu silme algoritması başlatıldı. Adet: ${checkedBoxes.length}`, 'warn');
-                for (let box of checkedBoxes) {
-                    const id = box.getAttribute('data-id');
-                    const targetItem = allGalleryData.find(x => x.id == id);
-                    if (targetItem) await removeFileFromStorage(targetItem.image_url);
-                    const { error } = await knglSupaClient.from('gallery_images').delete().eq('id', id);
-                    if (error) addLog(`ID: ${id} toplu silme sırasında hata verdi: ${error.message}`, 'error');
-                }
-                addLog('Toplu temizleme işlemi bitti. Galeri tazeleniyor.', 'success');
-                fetchGalleryData();
-            });
-        }
-
-        fetchGalleryData();
-
-// ==========================================
-        // SİBER ARKA PLAN PARTİKÜL MOTORU
+        // ==========================================
+        // DİNAMİK ARKA PLAN PARTİKÜL SİSTEMİ
         // ==========================================
         function createCyberParticles() {
             const container = document.getElementById('cyber-particles');
             if (!container) return;
 
-            const particleCount = 25; // Ekranda aynı anda bulunacak maksimum partikül sayısı
+            const particleCount = 45; // Arka planda bulunacak maksimum partikül sayısı
 
             for (let i = 0; i < particleCount; i++) {
                 setTimeout(() => {
