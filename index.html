@@ -771,17 +771,25 @@
             border-color: var(--accent-green);
         }
 
-        .media-card:hover .img-container img {
-            transform: scale(1.08);
-            animation: cardHoverGlitch 0.35s linear 1;
+        .img-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(115deg, transparent 42%, var(--accent-glow) 50%, transparent 58%);
+            opacity: 0;
+            transform: translateX(-120%);
+            pointer-events: none;
+            z-index: 4;
         }
 
-        @keyframes cardHoverGlitch {
-            0% { clip-path: inset(0 0 0 0); filter: brightness(1) hue-rotate(0deg); }
-            15% { clip-path: inset(8% 0 55% 0); filter: brightness(1.3) hue-rotate(20deg); }
-            30% { clip-path: inset(48% 0 6% 0); filter: brightness(0.75) hue-rotate(-15deg); }
-            45% { clip-path: inset(18% 0 38% 0); filter: brightness(1.15) hue-rotate(8deg); }
-            60%, 100% { clip-path: inset(0 0 0 0); filter: brightness(1) hue-rotate(0deg); }
+        .media-card:hover .img-container::after {
+            animation: cardLightSweep 0.7s ease;
+        }
+
+        @keyframes cardLightSweep {
+            0% { transform: translateX(-120%); opacity: 0.9; }
+            100% { transform: translateX(120%); opacity: 0; }
         }
 
         .img-container {
