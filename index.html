@@ -1238,10 +1238,10 @@
 
         <section class="about-area">
             <div class="about-title">
-                <span>[//_ KNGLRP_MISSION_CONTROL]</span>
+                <span>[//_ KNGLRP_GALLERY_CONTROL]</span>
             </div>
             <p class="about-text">
-                KNGLRP evrenine hoş geldiniz. Bu galeri; şehrin sokaklarında dönen en sıcak hikayeleri, unutulmaz anları, illegal yarışların tozunu ve departmanın operasyonlarını anlık olarak kayıt altına alan dijital bir arşiv projesidir. Aşağıdaki panel üzerinden etiket filtrelemelerini kullanarak rollere, karakterlere veya özel etkinliklere ait anılara hızlıca göz atabilirsiniz.
+                KNGLRP evrenine hoş geldiniz. Bu galeri; şehrin sokaklarında dönen en sıcak hikayeleri, unutulmaz anları, illegal yarışların tozunu ve departmanın operasyonlarını kayıt altına alan dijital bir arşiv projesidir. Aşağıdaki panel üzerinden etiket filtrelemelerini kullanarak rollere, karakterlere veya özel etkinliklere ait anılara hızlıca göz atabilirsiniz.
             </p>
         </section>
 
@@ -2016,73 +2016,96 @@
         fetchGalleryData();
 
         // ==========================================
-        // SİBER YAĞMUR (MATRIX RAIN) MOTORU
+        // SİBER VERİ ALANI (DATA FIELD) MOTORU
+        // Rastgele yanıp sönen, hafifçe süzülen ışık noktaları
         // ==========================================
-        (function initCyberRain() {
+        (function initDataField() {
             const canvas = document.getElementById('cyber-rain-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            // Yağmur karakterleri: Latin harfler, rakamlar ve birkaç siber sembol karışımı
-            const rainChars = 'アイウエオカキクケコサシスセソ01アカサタナハマヤラワ$#@%&*+-=<>/\\{}[]KNGLRP'.split('');
-
-            const fontSize = 11;
-            let columns = 0;
-            let drops = [];
+            let points = [];
             let lastFrameTime = 0;
-            const frameInterval = 65; // ms cinsinden - büyüttükçe yağmur yavaşlar
+            const frameInterval = 33; // ~30fps, akıcı ama hafif
 
-            function getRainColor() {
+            function getFieldColor() {
                 const style = getComputedStyle(document.documentElement);
                 return style.getPropertyValue('--accent-green').trim() || '#00ff87';
             }
 
-            // Performans için: rengi her frame'de okumak yerine önbelleğe alıyoruz,
-            // sadece tema değiştiğinde güncelliyoruz.
-            let cachedColor = getRainColor();
+            // Performans için: rengi her frame'de okumak yerine önbelleğe alıyoruz
+            let cachedColor = getFieldColor();
+            let cachedRgb = hexToRgb(cachedColor);
             document.addEventListener('kngl-theme-changed', () => {
-                cachedColor = getRainColor();
+                cachedColor = getFieldColor();
+                cachedRgb = hexToRgb(cachedColor);
             });
+
+            function hexToRgb(hex) {
+                hex = hex.replace('#', '');
+                if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                const num = parseInt(hex, 16);
+                if (isNaN(num)) return { r: 0, g: 255, b: 135 };
+                return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+            }
+
+            function createPoints() {
+                // Ekran alanına göre nokta yoğunluğu (çok küçük/çok büyük ekranlarda dengelemek için)
+                const area = canvas.width * canvas.height;
+                const count = Math.min(180, Math.max(60, Math.floor(area / 14000)));
+                const newPoints = [];
+                for (let i = 0; i < count; i++) {
+                    newPoints.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: 0.8 + Math.random() * 2.2,
+                        vx: (Math.random() - 0.5) * 0.08,
+                        vy: 0.4 + Math.random() * 0.9, // aşağı doğru yağmur gibi süzülme
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.015 + Math.random() * 0.035 // yanıp sönme hızı
+                    });
+                }
+                points = newPoints;
+            }
 
             function resizeCanvas() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
-                columns = Math.floor(canvas.width / fontSize);
-                // Sütun dizisini yeni boyuta göre yeniden oluştur, mevcut ilerlemeyi mümkün olduğunca koru
-                const newDrops = [];
-                for (let i = 0; i < columns; i++) {
-                    newDrops[i] = drops[i] !== undefined ? drops[i] : Math.floor(Math.random() * -50);
-                }
-                drops = newDrops;
+                createPoints();
             }
 
-            function drawRain(timestamp) {
-                requestAnimationFrame(drawRain);
+            function drawField(timestamp) {
+                requestAnimationFrame(drawField);
 
-                // Kareyi belirli aralıklarla çiziyoruz ki yağmur yavaşlasın
                 if (timestamp - lastFrameTime < frameInterval) return;
                 lastFrameTime = timestamp;
 
-                // Yarı saydam siyah katman: eski karakterleri iz bırakarak siliyor (klasik matrix efekti)
-                ctx.fillStyle = 'rgba(5, 5, 8, 0.12)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Performans notu: shadowBlur kaldırıldı (her karakter için pahalı bir işlem).
-                // Yumuşak/parlak görünüm zaten canvas'a uygulanan CSS blur filtresiyle sağlanıyor.
-                ctx.fillStyle = cachedColor;
-                ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+                const { r, g, b } = cachedRgb;
 
-                for (let i = 0; i < drops.length; i++) {
-                    const char = rainChars[Math.floor(Math.random() * rainChars.length)];
-                    const x = i * fontSize;
-                    const y = drops[i] * fontSize;
+                for (let i = 0; i < points.length; i++) {
+                    const p = points[i];
 
-                    ctx.fillText(char, x, y);
+                    // Yavaş süzülme
+                    p.x += p.vx;
+                    p.y += p.vy;
 
-                    if (y > canvas.height && Math.random() > 0.975) {
-                        drops[i] = 0;
-                    }
-                    drops[i]++;
+                    // Ekran dışına çıkarsa diğer taraftan geri getir
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+
+                    // Yanıp sönme (sinüs dalgasıyla yumuşak titreşim)
+                    p.phase += p.speed;
+                    const twinkle = (Math.sin(p.phase) + 1) / 2; // 0-1 arası
+                    const alpha = 0.15 + twinkle * 0.65;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha.toFixed(3)})`;
+                    ctx.fill();
                 }
             }
 
@@ -2093,7 +2116,7 @@
             });
             document.addEventListener('DOMContentLoaded', () => {
                 resizeCanvas();
-                requestAnimationFrame(drawRain);
+                requestAnimationFrame(drawField);
             });
         })();
 
