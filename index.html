@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KNGLRP | Gallery </title>
+    <title>KNGLRP | Gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +21,7 @@
                 linear-gradient(var(--border-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
             background-size: 50px 50px;
+            background-position: 0px 0px;
             background-attachment: fixed;
         }
 
@@ -37,16 +38,100 @@
             z-index: -1;
         }
 
-        /* Dinamik Partikül Konteyneri */
-        #cyber-particles {
+        /* CRT Tarama Çizgisi (Scanline) Overlay */
+        #crt-scanline-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             pointer-events: none;
-            z-index: -1;
-            overflow: hidden;
+            z-index: 9999;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0) 0px,
+                rgba(0, 0, 0, 0) 1px,
+                rgba(0, 0, 0, 0.18) 2px,
+                rgba(0, 0, 0, 0.18) 3px
+            );
+            mix-blend-mode: overlay;
+            opacity: 0.5;
+        }
+
+        #crt-scanline-overlay::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.015) 50%, rgba(0,0,0,0.03) 50%);
+            background-size: 100% 4px;
+            animation: crtFlicker 6s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes crtFlicker {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; }
+            93% { opacity: 0.82; }
+            94% { opacity: 1; }
+            96% { opacity: 0.9; }
+            97% { opacity: 1; }
+        }
+
+        /* Açılış Terminal (Boot Sequence) Animasyonu */
+        #boot-sequence {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #030304;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #boot-sequence.boot-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        #boot-sequence-terminal {
+            width: min(560px, 88vw);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--accent-green, #00ff87);
+        }
+
+        #boot-sequence-terminal .boot-line {
+            white-space: pre-wrap;
+            opacity: 0;
+            text-shadow: 0 0 8px currentColor;
+        }
+
+        #boot-sequence-terminal .boot-line.boot-line-visible {
+            opacity: 1;
+        }
+
+        #boot-sequence-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: var(--accent-green, #00ff87);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: bootCursorBlink 0.9s steps(1) infinite;
+        }
+
+        @keyframes bootCursorBlink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
         }
 
         /* Siber Yağmur (Matrix Rain) Canvas */
@@ -59,39 +144,8 @@
             pointer-events: none;
             z-index: -1;
             opacity: 0.35;
-            filter: blur(2.5px);
+            filter: blur(1.5px);
             transition: opacity 0.3s ease;
-        }
-
-        .particle {
-            position: absolute;
-            background: linear-gradient(135deg, var(--accent-green), transparent);
-            border-radius: 2px;
-            opacity: 0.3;
-            animation: floatUp linear infinite;
-        }
-
-        /* Mor temaya geçildiğinde partiküllerin rengini de mor yapalım */
-        [data-theme="cyber-purple"] .particle {
-            background: linear-gradient(135deg, var(--accent-purple), transparent);
-        }
-
-        /* Partikül Yukarı Süzülme Animasyonu */
-        @keyframes floatUp {
-            0% {
-                transform: translateY(105vh) translateX(0) scale(0.5);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.4;
-            }
-            90% {
-                opacity: 0.4;
-            }
-            100% {
-                transform: translateY(-5vh) translateX(50px) scale(1.2);
-                opacity: 0;
-            }
         }
         
         :root {
@@ -137,15 +191,6 @@
             overflow-x: hidden;
             overflow-y: auto !important;
             transition: background-color 0.3s ease;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 80% 20%, var(--accent-glow) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
         }
 
         .container {
@@ -1023,11 +1068,16 @@
     </style>
 </head>
 <body>
+    <!-- Açılış Terminal Animasyonu -->
+    <div id="boot-sequence">
+        <div id="boot-sequence-terminal"></div>
+    </div>
+
+    <!-- CRT Tarama Çizgisi Overlay -->
+    <div id="crt-scanline-overlay"></div>
+
     <!-- Siber Yağmur (Matrix Rain) Canvas -->
     <canvas id="cyber-rain-canvas"></canvas>
-
-    <!-- Siber Arka Plan Partikül Yapısı -->
-    <div id="cyber-particles"></div>
 
     <div class="container">
         <header>
@@ -1844,45 +1894,6 @@
 
         fetchGalleryData();
 
-// ==========================================
-        // SİBER ARKA PLAN PARTİKÜL MOTORU
-        // ==========================================
-        function createCyberParticles() {
-            const container = document.getElementById('cyber-particles');
-            if (!container) return;
-
-            const particleCount = 25; // Ekranda aynı anda bulunacak maksimum partikül sayısı
-
-            for (let i = 0; i < particleCount; i++) {
-                setTimeout(() => {
-                    const particle = document.createElement('div');
-                    particle.classList.add('particle');
-                    
-                    // Rastgele genişlik ve yükseklik (Dikey çizgiler veya kareler şeklinde)
-                    const isLine = Math.random() > 0.5;
-                    particle.style.width = isLine ? '2px' : '4px';
-                    particle.style.height = isLine ? '20px' : '4px';
-                    
-                    // Rastgele yatay konum
-                    particle.style.left = Math.random() * 100 + 'vw';
-                    
-                    // Rastgele animasyon süresi ve gecikmesi
-                    const duration = 8 + Math.random() * 12; // 8-20 saniye arası
-                    particle.style.animationDuration = duration + 's';
-                    
-                    // Döngü bittikçe partikülü yenile
-                    particle.addEventListener('animationend', () => {
-                        particle.style.left = Math.random() * 100 + 'vw';
-                    });
-
-                    container.appendChild(particle);
-                }, i * 300); // Partiküllerin aynı anda değil, sırayla doğması için gecikme
-            }
-        }
-
-        // Sayfa yüklendiğinde efekti başlat
-        document.addEventListener('DOMContentLoaded', createCyberParticles);
-
         // ==========================================
         // SİBER YAĞMUR (MATRIX RAIN) MOTORU
         // ==========================================
@@ -1956,6 +1967,91 @@
                 resizeCanvas();
                 requestAnimationFrame(drawRain);
             });
+        })();
+
+        // ==========================================
+        // AÇILIŞ TERMİNAL (BOOT SEQUENCE) ANİMASYONU
+        // ==========================================
+        (function initBootSequence() {
+            const bootOverlay = document.getElementById('boot-sequence');
+            const terminal = document.getElementById('boot-sequence-terminal');
+            if (!bootOverlay || !terminal) return;
+
+            const bootLines = [
+                '> KNGLRP_SYSTEM v2.4 başlatılıyor...',
+                '> Güvenlik protokolleri doğrulanıyor... [OK]',
+                '> Veritabanı bağlantısı kuruluyor...',
+                '> Medya arşivi indeksleniyor...',
+                '> Arayüz render motoru yükleniyor...',
+                '> Erişim izni verildi. Hoş geldin, operatör.'
+            ];
+
+            let lineIndex = 0;
+            let charIndex = 0;
+            let currentLineEl = null;
+
+            function typeNextChar() {
+                if (lineIndex >= bootLines.length) {
+                    setTimeout(() => {
+                        bootOverlay.classList.add('boot-hidden');
+                        setTimeout(() => bootOverlay.remove(), 600);
+                    }, 350);
+                    return;
+                }
+
+                if (charIndex === 0) {
+                    currentLineEl = document.createElement('div');
+                    currentLineEl.className = 'boot-line boot-line-visible';
+                    terminal.appendChild(currentLineEl);
+                }
+
+                const line = bootLines[lineIndex];
+                if (charIndex < line.length) {
+                    currentLineEl.textContent = line.substring(0, charIndex + 1);
+                    charIndex++;
+                    setTimeout(typeNextChar, 14 + Math.random() * 22);
+                } else {
+                    // Yanıp sönen imleci son eklenen satırın sonuna koy
+                    const cursor = document.createElement('span');
+                    cursor.id = 'boot-sequence-cursor';
+                    currentLineEl.appendChild(cursor);
+                    setTimeout(() => {
+                        cursor.remove();
+                        lineIndex++;
+                        charIndex = 0;
+                        typeNextChar();
+                    }, 220);
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(typeNextChar, 300);
+            });
+        })();
+
+        // ==========================================
+        // FARE HAREKETİYLE GRID PARALLAX EFEKTİ
+        // ==========================================
+        (function initGridParallax() {
+            let targetX = 0, targetY = 0;
+            let currentX = 0, currentY = 0;
+            const maxShift = 18; // px cinsinden maksimum kayma miktarı
+
+            window.addEventListener('mousemove', (e) => {
+                const nx = (e.clientX / window.innerWidth) - 0.5;
+                const ny = (e.clientY / window.innerHeight) - 0.5;
+                targetX = nx * maxShift;
+                targetY = ny * maxShift;
+            });
+
+            function animateParallax() {
+                // Yumuşak takip (lerp) ile daha akıcı bir hareket
+                currentX += (targetX - currentX) * 0.06;
+                currentY += (targetY - currentY) * 0.06;
+                document.body.style.backgroundPosition = currentX + 'px ' + currentY + 'px';
+                requestAnimationFrame(animateParallax);
+            }
+            requestAnimationFrame(animateParallax);
         })();
 
     </script>
