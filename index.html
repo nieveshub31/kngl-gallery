@@ -49,6 +49,19 @@
             overflow: hidden;
         }
 
+        /* Siber Yağmur (Matrix Rain) Canvas */
+        #cyber-rain-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.35;
+            transition: opacity 0.3s ease;
+        }
+
         .particle {
             position: absolute;
             background: linear-gradient(135deg, var(--accent-green), transparent);
@@ -1009,6 +1022,9 @@
     </style>
 </head>
 <body>
+    <!-- Siber Yağmur (Matrix Rain) Canvas -->
+    <canvas id="cyber-rain-canvas"></canvas>
+
     <!-- Siber Arka Plan Partikül Yapısı -->
     <div id="cyber-particles"></div>
 
@@ -1828,39 +1844,119 @@
         fetchGalleryData();
 
 // ==========================================
-        // SİBER YAĞMUR MOTORU (GÜNCELLENDİ)
+        // SİBER ARKA PLAN PARTİKÜL MOTORU
         // ==========================================
         function createCyberParticles() {
             const container = document.getElementById('cyber-particles');
             if (!container) return;
-            const particleCount = 60; /* Yoğunluk artırıldı */
+
+            const particleCount = 25; // Ekranda aynı anda bulunacak maksimum partikül sayısı
 
             for (let i = 0; i < particleCount; i++) {
                 setTimeout(() => {
                     const particle = document.createElement('div');
                     particle.classList.add('particle');
                     
-                    // Yağmur damlası çizgileri
-                    particle.style.width = '1px';
-                    particle.style.height = (25 + Math.random() * 25) + 'px'; /* 25-50px arası dinamik yağmur boyu */
+                    // Rastgele genişlik ve yükseklik (Dikey çizgiler veya kareler şeklinde)
+                    const isLine = Math.random() > 0.5;
+                    particle.style.width = isLine ? '2px' : '4px';
+                    particle.style.height = isLine ? '20px' : '4px';
+                    
+                    // Rastgele yatay konum
                     particle.style.left = Math.random() * 100 + 'vw';
                     
-                    // Hızlı süzülme süresi (2-4 saniye arası yağmur hızı)
-                    const duration = 2 + Math.random() * 2;
+                    // Rastgele animasyon süresi ve gecikmesi
+                    const duration = 8 + Math.random() * 12; // 8-20 saniye arası
                     particle.style.animationDuration = duration + 's';
                     
+                    // Döngü bittikçe partikülü yenile
                     particle.addEventListener('animationend', () => {
                         particle.style.left = Math.random() * 100 + 'vw';
                     });
+
                     container.appendChild(particle);
-                }, i * 150);
+                }, i * 300); // Partiküllerin aynı anda değil, sırayla doğması için gecikme
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            createCyberParticles();
-            fetchGalleryItems();
-        });
+        // Sayfa yüklendiğinde efekti başlat
+        document.addEventListener('DOMContentLoaded', createCyberParticles);
+
+        // ==========================================
+        // SİBER YAĞMUR (MATRIX RAIN) MOTORU
+        // ==========================================
+        (function initCyberRain() {
+            const canvas = document.getElementById('cyber-rain-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Yağmur karakterleri: Latin harfler, rakamlar ve birkaç siber sembol karışımı
+            const rainChars = 'アイウエオカキクケコサシスセソ01アカサタナハマヤラワ$#@%&*+-=<>/\\{}[]KNGLRP'.split('');
+
+            const fontSize = 11;
+            let columns = 0;
+            let drops = [];
+            let lastFrameTime = 0;
+            const frameInterval = 65; // ms cinsinden - büyüttükçe yağmur yavaşlar
+
+            function getRainColor() {
+                // Aktif temanın rengini canlı olarak okuyoruz (mor temaya geçince otomatik mor olur)
+                const style = getComputedStyle(document.documentElement);
+                return style.getPropertyValue('--accent-green').trim() || '#00ff87';
+            }
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                columns = Math.floor(canvas.width / fontSize);
+                // Sütun dizisini yeni boyuta göre yeniden oluştur, mevcut ilerlemeyi mümkün olduğunca koru
+                const newDrops = [];
+                for (let i = 0; i < columns; i++) {
+                    newDrops[i] = drops[i] !== undefined ? drops[i] : Math.floor(Math.random() * -50);
+                }
+                drops = newDrops;
+            }
+
+            function drawRain(timestamp) {
+                requestAnimationFrame(drawRain);
+
+                // Kareyi belirli aralıklarla çiziyoruz ki yağmur yavaşlasın
+                if (timestamp - lastFrameTime < frameInterval) return;
+                lastFrameTime = timestamp;
+
+                // Yarı saydam siyah katman: eski karakterleri iz bırakarak siliyor (klasik matrix efekti)
+                ctx.fillStyle = 'rgba(5, 5, 8, 0.12)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const color = getRainColor();
+                ctx.fillStyle = color;
+                ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 4;
+
+                for (let i = 0; i < drops.length; i++) {
+                    const char = rainChars[Math.floor(Math.random() * rainChars.length)];
+                    const x = i * fontSize;
+                    const y = drops[i] * fontSize;
+
+                    ctx.fillText(char, x, y);
+
+                    if (y > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+
+                ctx.shadowBlur = 0;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            document.addEventListener('DOMContentLoaded', () => {
+                resizeCanvas();
+                requestAnimationFrame(drawRain);
+            });
+        })();
+
     </script>
 </body>
 </html>
