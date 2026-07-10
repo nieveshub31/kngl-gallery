@@ -1003,7 +1003,14 @@
             color: var(--accent-green);
             font-weight: 600;
             text-shadow: 0 0 8px var(--accent-glow);
+            text-decoration: none;
+            cursor: pointer;
             transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .footer-highlight:hover {
+            text-shadow: 0 0 16px var(--accent-glow);
+            text-decoration: underline;
         }
 
         .pagination-btn {
@@ -1391,10 +1398,10 @@
 
         <section class="about-area">
             <div class="about-title">
-                <span>[//_ KNGLRP_GALLERY]</span>
+                <span>[//_ KNGLRP_MISSION_CONTROL]</span>
             </div>
             <p class="about-text">
-                KNGLRP evrenine hoş geldiniz. Bu galeri; şehrin sokaklarında dönen en sıcak hikayeleri, unutulmaz anları, illegal yarışların tozunu ve departmanın operasyonlarını kayıt altına alan dijital bir arşiv projesidir. Aşağıdaki panel üzerinden etiket filtrelemelerini kullanarak rollere, karakterlere veya özel etkinliklere ait anılara hızlıca göz atabilirsiniz.
+                KNGLRP evrenine hoş geldiniz. Bu galeri; şehrin sokaklarında dönen en sıcak hikayeleri, unutulmaz anları, illegal yarışların tozunu ve departmanın operasyonlarını anlık olarak kayıt altına alan dijital bir arşiv projesidir. Aşağıdaki panel üzerinden etiket filtrelemelerini kullanarak rollere, karakterlere veya özel etkinliklere ait anılara hızlıca göz atabilirsiniz.
             </p>
         </section>
 
@@ -1403,7 +1410,7 @@
         <div class="pagination-container" id="paginationContainer"></div>
 
         <footer class="site-footer">
-            Developed by <span class="footer-highlight">NieVes</span>. Powered by <span class="footer-highlight">Supabase</span>.
+            Developed by <a href="https://www.instagram.com/cesurdrnn/" target="_blank" rel="noopener noreferrer" class="footer-highlight">NieVes</a>. Powered by <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" class="footer-highlight">Supabase</a>.
         </footer>
     </div>
 
