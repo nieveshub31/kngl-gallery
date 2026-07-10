@@ -99,7 +99,7 @@
             97% { opacity: 1; }
         }
 
-        /* Açılış Terminal (Boot Sequence) Animasyonu */
+        /* Açılış Ekranı (Intro) Animasyonu */
         #boot-sequence {
             position: fixed;
             top: 0;
@@ -120,37 +120,41 @@
             pointer-events: none;
         }
 
-        #boot-sequence-terminal {
-            width: min(560px, 88vw);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            line-height: 1.7;
-            color: var(--accent-green, #00ff87);
-        }
-
-        #boot-sequence-terminal .boot-line {
-            white-space: pre-wrap;
+        #boot-sequence-logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(32px, 8vw, 64px);
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: var(--text-white);
+            text-shadow: 0 0 20px var(--accent-glow, rgba(0,255,135,0.4)), 0 0 40px var(--accent-glow, rgba(0,255,135,0.2));
             opacity: 0;
-            text-shadow: 0 0 8px currentColor;
+            transform: scale(0.92);
+            animation: bootLogoReveal 2s ease forwards;
         }
 
-        #boot-sequence-terminal .boot-line.boot-line-visible {
-            opacity: 1;
-        }
-
-        #boot-sequence-cursor {
-            display: inline-block;
-            width: 8px;
-            height: 14px;
+        #boot-sequence-logo::after {
+            content: '';
+            display: block;
+            width: 0%;
+            height: 2px;
+            margin: 14px auto 0;
             background: var(--accent-green, #00ff87);
-            margin-left: 2px;
-            vertical-align: middle;
-            animation: bootCursorBlink 0.9s steps(1) infinite;
+            box-shadow: 0 0 10px var(--accent-green, #00ff87);
+            animation: bootLineGrow 2s ease forwards;
         }
 
-        @keyframes bootCursorBlink {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0; }
+        @keyframes bootLogoReveal {
+            0% { opacity: 0; transform: scale(0.92); }
+            18% { opacity: 1; transform: scale(1); }
+            82% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.04); }
+        }
+
+        @keyframes bootLineGrow {
+            0% { width: 0%; }
+            40% { width: 100%; }
+            82% { width: 100%; }
+            100% { width: 100%; opacity: 0; }
         }
 
         /* Siber Yağmur (Matrix Rain) Canvas */
@@ -1087,9 +1091,9 @@
     </style>
 </head>
 <body>
-    <!-- Açılış Terminal Animasyonu -->
+    <!-- Açılış Ekranı (Intro) -->
     <div id="boot-sequence">
-        <div id="boot-sequence-terminal"></div>
+        <div id="boot-sequence-logo">KNGLRP</div>
     </div>
 
     <!-- Fare İzleyen Arka Plan Işık Efekti -->
@@ -2000,63 +2004,17 @@
         })();
 
         // ==========================================
-        // AÇILIŞ TERMİNAL (BOOT SEQUENCE) ANİMASYONU
+        // AÇILIŞ EKRANI (INTRO) - 2 SANİYELİK KNGLRP LOGOSU
         // ==========================================
         (function initBootSequence() {
             const bootOverlay = document.getElementById('boot-sequence');
-            const terminal = document.getElementById('boot-sequence-terminal');
-            if (!bootOverlay || !terminal) return;
+            if (!bootOverlay) return;
 
-            const bootLines = [
-                '> KNGLRP_SYSTEM v2.4 başlatılıyor...',
-                '> Güvenlik protokolleri doğrulanıyor... [OK]',
-                '> Veritabanı bağlantısı kuruluyor...',
-                '> Medya arşivi indeksleniyor...',
-                '> Arayüz render motoru yükleniyor...',
-                '> Erişim izni verildi. Hoş geldin, operatör.'
-            ];
-
-            let lineIndex = 0;
-            let charIndex = 0;
-            let currentLineEl = null;
-
-            function typeNextChar() {
-                if (lineIndex >= bootLines.length) {
-                    setTimeout(() => {
-                        bootOverlay.classList.add('boot-hidden');
-                        setTimeout(() => bootOverlay.remove(), 600);
-                    }, 350);
-                    return;
-                }
-
-                if (charIndex === 0) {
-                    currentLineEl = document.createElement('div');
-                    currentLineEl.className = 'boot-line boot-line-visible';
-                    terminal.appendChild(currentLineEl);
-                }
-
-                const line = bootLines[lineIndex];
-                if (charIndex < line.length) {
-                    currentLineEl.textContent = line.substring(0, charIndex + 1);
-                    charIndex++;
-                    setTimeout(typeNextChar, 14 + Math.random() * 22);
-                } else {
-                    // Yanıp sönen imleci son eklenen satırın sonuna koy
-                    const cursor = document.createElement('span');
-                    cursor.id = 'boot-sequence-cursor';
-                    currentLineEl.appendChild(cursor);
-                    setTimeout(() => {
-                        cursor.remove();
-                        lineIndex++;
-                        charIndex = 0;
-                        typeNextChar();
-                    }, 220);
-                }
-            }
-
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(typeNextChar, 300);
-            });
+            // Logo animasyonu (CSS ile) 2 saniye sürüyor, sonrasında overlay'i kaldırıyoruz
+            setTimeout(() => {
+                bootOverlay.classList.add('boot-hidden');
+                setTimeout(() => bootOverlay.remove(), 500);
+            }, 2000);
         })();
 
         // ==========================================
