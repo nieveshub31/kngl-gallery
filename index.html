@@ -542,11 +542,12 @@
             width: 100%;
             background-color: var(--bg-darker);
             border: 1px solid var(--border-color);
-            height: 12px;
+            height: 20px;
             border-radius: 6px;
             margin-top: 6px;
             overflow: hidden;
             display: none;
+            position: relative;
         }
 
         .progress-bar {
@@ -555,6 +556,21 @@
             background-color: var(--accent-green);
             box-shadow: 0 0 10px var(--accent-green);
             transition: width 0.3s ease;
+        }
+
+        .progress-label {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10.5px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-white);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            letter-spacing: 0.3px;
+            pointer-events: none;
         }
 
         .modal-overlay {
@@ -688,6 +704,47 @@
         }
 
         .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        .upload-status-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(10, 11, 16, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            transition: all 0.25s ease;
+        }
+
+        .upload-status-badge[data-status="uploading"] {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            animation: badgePulse 0.8s ease-in-out infinite;
+        }
+
+        .upload-status-badge[data-status="success"] {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 135, 0.12);
+        }
+
+        .upload-status-badge[data-status="error"] {
+            color: var(--danger-red);
+            border-color: var(--danger-red);
+            background: rgba(255, 74, 74, 0.12);
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.7; }
+        }
 
         .preview-row input.inline-tag-input {
             flex-grow: 1;
@@ -1060,6 +1117,21 @@
             margin-bottom: 20px;
         }
 
+        .detail-item-row {
+            display: flex;
+            gap: 14px;
+        }
+
+        .detail-item-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .detail-item-value.loading-value {
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
         .detail-item-label {
             font-size: 11px;
             color: var(--text-gray);
@@ -1369,7 +1441,10 @@
                     <textarea id="linkInput" placeholder="Görsel adreslerini yapıştırın...&#10;Birden fazla ise alt satıra geçebilirsiniz."></textarea>
                     <div class="divider-text">Etiket Ekle</div>
                     <input type="text" id="tagInput" placeholder="(İsteğe bağlı, virgülle ayırın: lspd, car)">
-                    <div class="progress-container" id="uploadProgressContainer"><div class="progress-bar" id="uploadProgressBar"></div></div>
+                    <div class="progress-container" id="uploadProgressContainer">
+                        <div class="progress-bar" id="uploadProgressBar"></div>
+                        <span class="progress-label" id="uploadProgressLabel">0%</span>
+                    </div>
                     <button id="uploadBtn" style="justify-content: center; margin-top: auto; padding: 16px;">Görsel Yükle</button>
                 </div>
             </div>
@@ -1405,6 +1480,22 @@
                 <div class="detail-item">
                     <div class="detail-item-label">Yüklenme Tarihi</div>
                     <div class="detail-item-value" id="detailDate">-</div>
+                </div>
+
+                <div class="detail-item detail-item-row">
+                    <div class="detail-item-col">
+                        <div class="detail-item-label">Boyutlar</div>
+                        <div class="detail-item-value" id="detailDimensions">-</div>
+                    </div>
+                    <div class="detail-item-col">
+                        <div class="detail-item-label">Dosya Boyutu</div>
+                        <div class="detail-item-value" id="detailFileSize">-</div>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-item-label">Format</div>
+                    <div class="detail-item-value" id="detailFormat">-</div>
                 </div>
 
                 <div class="detail-item">
@@ -1509,6 +1600,7 @@
         const previewContainer = document.getElementById('previewContainer');
         const uploadProgressContainer = document.getElementById('uploadProgressContainer');
         const uploadProgressBar = document.getElementById('uploadProgressBar');
+        const uploadProgressLabel = document.getElementById('uploadProgressLabel');
 
         // Lightbox Elemanları
         const lightboxOverlay = document.getElementById('lightboxOverlay');
@@ -1521,6 +1613,9 @@
         const lightboxInfoBtn = document.getElementById('lightboxInfoBtn');
         const lightboxDetailsSide = document.getElementById('lightboxDetailsSide');
         const detailDate = document.getElementById('detailDate');
+        const detailDimensions = document.getElementById('detailDimensions');
+        const detailFileSize = document.getElementById('detailFileSize');
+        const detailFormat = document.getElementById('detailFormat');
         const detailTags = document.getElementById('detailTags');
 
         const liveLoggerPanel = document.getElementById('liveLoggerPanel');
@@ -1608,9 +1703,19 @@
             lightboxOverlay.style.display = 'flex';
         };
 
+        let lightboxMetaToken = 0;
+
+        function formatBytes(bytes) {
+            if (!bytes || isNaN(bytes)) return null;
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
         function updateLightboxContent() {
             if (currentLightboxIndex === -1 || !filteredData[currentLightboxIndex]) return;
             const currentItem = filteredData[currentLightboxIndex];
+            const myToken = ++lightboxMetaToken;
             
             lightboxImg.src = currentItem.image_url;
 
@@ -1627,6 +1732,43 @@
             } else {
                 detailTags.innerHTML = '<span class="tag" style="opacity: 0.5;">#etiket-yok</span>';
             }
+
+            // Format: URL uzantısından çıkarım
+            const extMatch = currentItem.image_url.split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
+            detailFormat.innerText = extMatch ? extMatch[1].toUpperCase() : 'Bilinmiyor';
+
+            // Boyutlar: görsel tarayıcıda yüklendikçe doğal genişlik/yükseklik okunuyor
+            detailDimensions.innerText = 'Yükleniyor...';
+            detailDimensions.classList.add('loading-value');
+            const dimProbe = new Image();
+            dimProbe.onload = function() {
+                if (myToken !== lightboxMetaToken) return;
+                detailDimensions.innerText = `${dimProbe.naturalWidth} × ${dimProbe.naturalHeight}`;
+                detailDimensions.classList.remove('loading-value');
+            };
+            dimProbe.onerror = function() {
+                if (myToken !== lightboxMetaToken) return;
+                detailDimensions.innerText = 'Bilinmiyor';
+                detailDimensions.classList.remove('loading-value');
+            };
+            dimProbe.src = currentItem.image_url;
+
+            // Dosya boyutu: HEAD isteğiyle Content-Length okunuyor
+            detailFileSize.innerText = 'Yükleniyor...';
+            detailFileSize.classList.add('loading-value');
+            fetch(currentItem.image_url, { method: 'HEAD' })
+                .then(res => {
+                    if (myToken !== lightboxMetaToken) return;
+                    const size = res.headers.get('content-length');
+                    const formatted = formatBytes(parseInt(size, 10));
+                    detailFileSize.innerText = formatted || 'Bilinmiyor';
+                    detailFileSize.classList.remove('loading-value');
+                })
+                .catch(() => {
+                    if (myToken !== lightboxMetaToken) return;
+                    detailFileSize.innerText = 'Bilinmiyor';
+                    detailFileSize.classList.remove('loading-value');
+                });
         }
 
         function navigateLightbox(direction) {
@@ -1780,8 +1922,12 @@
                 reader.onload = function(e) {
                     const row = document.createElement('div');
                     row.className = 'preview-row';
+                    row.setAttribute('data-queue-id', itemData.id);
                     row.innerHTML = `
-                        <div class="preview-item"><img src="${e.target.result}" alt="Önizleme"></div>
+                        <div class="preview-item">
+                            <img src="${e.target.result}" alt="Önizleme">
+                            <span class="upload-status-badge" data-status="pending" title="Sırada bekliyor">⏳</span>
+                        </div>
                         <input type="text" class="inline-tag-input" placeholder="Bu görsele özel etiket" value="${itemData.customTag}">
                         <button class="remove-preview-btn" data-id="${itemData.id}">&times;</button>
                     `;
@@ -1796,6 +1942,23 @@
                 }
                 reader.readAsDataURL(itemData.file);
             });
+        }
+
+        function setPreviewRowStatus(queueId, status) {
+            const row = previewContainer.querySelector(`.preview-row[data-queue-id="${queueId}"]`);
+            if (!row) return;
+            const badge = row.querySelector('.upload-status-badge');
+            if (!badge) return;
+            const map = {
+                pending: { icon: '⏳', title: 'Sırada bekliyor' },
+                uploading: { icon: '↑', title: 'Yükleniyor...' },
+                success: { icon: '✓', title: 'Başarıyla yüklendi' },
+                error: { icon: '✕', title: 'Yükleme başarısız' }
+            };
+            const conf = map[status] || map.pending;
+            badge.setAttribute('data-status', status);
+            badge.setAttribute('title', conf.title);
+            badge.innerText = conf.icon;
         }
 
         if (dropZone) {
@@ -1839,9 +2002,21 @@
 
                 if (selectedFilesQueue.length === 0 && linkUrls.length === 0) return alert('Dosya seçin veya link girin.');
 
+                const totalCount = linkUrls.length + selectedFilesQueue.length;
+                let processedCount = 0;
+                let failCount = 0;
+
+                function bumpProgress() {
+                    processedCount++;
+                    const pct = Math.round((processedCount / totalCount) * 100);
+                    uploadProgressBar.style.width = `${pct}%`;
+                    uploadProgressLabel.innerText = `${pct}% (${processedCount}/${totalCount})`;
+                }
+
                 statusText.innerText = "Yükleniyor, lütfen bekleyin...";
                 uploadProgressContainer.style.display = 'block';
                 uploadProgressBar.style.width = '0%';
+                uploadProgressLabel.innerText = `0% (0/${totalCount})`;
                 
                 addLog(`Kolektif yükleme işlemi başlatıldı. (${linkUrls.length} URL, ${selectedFilesQueue.length} Yerel Dosya)`, 'info');
 
@@ -1849,9 +2024,9 @@
                     for (let k = 0; k < linkUrls.length; k++) {
                         const permanentUrl = await fetchImageAndUploadToStorage(linkUrls[k], generalTags);
                         const { error: insErr } = await knglSupaClient.from('gallery_images').insert([{ image_url: permanentUrl, tags: generalTags || '' }]);
-                        if(insErr) addLog(`URL SQL kaydı hatası: ${insErr.message}`, 'error');
+                        if(insErr) { addLog(`URL SQL kaydı hatası: ${insErr.message}`, 'error'); failCount++; }
                         else addLog(`[${k+1}/${linkUrls.length}] URL kaydı veritabanına işlendi.`, 'success');
-                        uploadProgressBar.style.width = `${Math.round(((k + 1) / linkUrls.length) * 100)}%`;
+                        bumpProgress();
                     }
                     document.getElementById('linkInput').value = '';
                 }
@@ -1862,11 +2037,15 @@
                         const file = item.file;
                         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
                         
+                        setPreviewRowStatus(item.id, 'uploading');
                         addLog(`[${i+1}/${selectedFilesQueue.length}] Yerel dosya yükleniyor: ${file.name}`, 'storage');
                         const { error: upErr } = await knglSupaClient.storage.from('gallery').upload(fileName, file);
                         
                         if(upErr) {
                             addLog(`Dosya yükleme başarısız: ${file.name} - ${upErr.message}`, 'error');
+                            setPreviewRowStatus(item.id, 'error');
+                            failCount++;
+                            bumpProgress();
                             continue;
                         }
 
@@ -1874,22 +2053,35 @@
                         const { data } = knglSupaClient.storage.from('gallery').getPublicUrl(fileName);
                         
                         const { error: insErr } = await knglSupaClient.from('gallery_images').insert([{ image_url: data.publicUrl, tags: finalTags }]);
-                        if(insErr) addLog(`Dosya veritabanı indeks hatası: ${insErr.message}`, 'error');
-                        else addLog(`Dosya başarıyla indekslendi ve yayına alındı.`, 'success');
+                        if(insErr) {
+                            addLog(`Dosya veritabanı indeks hatası: ${insErr.message}`, 'error');
+                            setPreviewRowStatus(item.id, 'error');
+                            failCount++;
+                        } else {
+                            addLog(`Dosya başarıyla indekslendi ve yayına alındı.`, 'success');
+                            setPreviewRowStatus(item.id, 'success');
+                        }
                         
-                        uploadProgressBar.style.width = `${Math.round(((i + 1) / selectedFilesQueue.length) * 100)}%`;
+                        bumpProgress();
                     }
-                    selectedFilesQueue = [];
-                    renderPreviews();
+                    setTimeout(() => {
+                        selectedFilesQueue = [];
+                        renderPreviews();
+                    }, 900);
                 }
 
-                setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1000);
-                statusText.innerText = 'Tüm medyalar yüklendi!';
-                showToast('Tüm medyalar başarıyla yüklendi', 'success');
+                setTimeout(() => { uploadProgressContainer.style.display = 'none'; }, 1200);
+                if (failCount === 0) {
+                    statusText.innerText = 'Tüm medyalar yüklendi!';
+                    showToast('Tüm medyalar başarıyla yüklendi', 'success');
+                } else {
+                    statusText.innerText = `${processedCount - failCount}/${totalCount} başarılı, ${failCount} hata`;
+                    showToast(`${failCount} görsel yüklenemedi`, 'warn');
+                }
                 document.getElementById('tagInput').value = '';
                 currentPage = 1;
                 fetchGalleryData();
-                setTimeout(() => statusText.innerText = '', 3000);
+                setTimeout(() => statusText.innerText = '', 3500);
             });
         }
 
