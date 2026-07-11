@@ -1229,6 +1229,61 @@
         }
 
         /* Cyberpunk Bildirim (Toast) Sistemi */
+        /* FiveM Sunucu Oyuncu Sayacı HUD */
+        #fivem-player-hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(10, 11, 16, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 7px 14px 7px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-white);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+            cursor: default;
+        }
+
+        .fivem-hud-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: fivemHudPulse 1.6s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        .fivem-hud-dot.offline {
+            background: var(--danger-red, #ff4a4a);
+            box-shadow: 0 0 8px var(--danger-red, #ff4a4a);
+            animation: none;
+        }
+
+        #fivemPlayerCount {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .fivem-hud-label {
+            color: var(--text-gray);
+        }
+
+        @keyframes fivemHudPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        @media (max-width: 600px) {
+            #fivem-player-hud { top: 12px; left: 12px; padding: 6px 12px 6px 10px; font-size: 11px; }
+        }
+
         #toast-container {
             position: fixed;
             top: 20px;
@@ -1351,6 +1406,13 @@
 
     <!-- Siber Yağmur (Matrix Rain) Canvas -->
     <canvas id="cyber-rain-canvas"></canvas>
+
+    <!-- FiveM Sunucu Oyuncu Sayacı HUD -->
+    <div id="fivem-player-hud">
+        <span class="fivem-hud-dot" id="fivemHudDot"></span>
+        <span id="fivemPlayerCount">-</span>
+        <span class="fivem-hud-label">oyuncu</span>
+    </div>
 
     <!-- Cyberpunk Bildirim (Toast) Konteyneri -->
     <div id="toast-container"></div>
@@ -1581,6 +1643,37 @@
                 addLog('Supabase altyapısı başarılı şekilde başlatıldı.', 'success');
             }
         } catch(e) { addLog('Supabase API başlatma hatası: ' + e.message, 'error'); }
+
+        // ==========================================
+        // FIVEM SUNUCU OYUNCU SAYACI
+        // ==========================================
+        const FIVEM_SERVER_CODE = '5oy4vxd';
+
+        async function updateFivemPlayerCount() {
+            const countEl = document.getElementById('fivemPlayerCount');
+            const dotEl = document.getElementById('fivemHudDot');
+            if (!countEl) return;
+
+            try {
+                const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${FIVEM_SERVER_CODE}`);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                const data = json.Data || json.data || {};
+
+                const clients = data.clients ?? data.Clients ?? 0;
+                const maxClients = data.sv_maxclients ?? data.svMaxclients ?? data.SvMaxclients ?? null;
+
+                countEl.innerText = maxClients ? `${clients}/${maxClients}` : `${clients}`;
+                if (dotEl) dotEl.classList.remove('offline');
+            } catch (err) {
+                countEl.innerText = 'Çevrimdışı';
+                if (dotEl) dotEl.classList.add('offline');
+                addLog(`FiveM sunucu verisi alınamadı: ${err.message}`, 'warn');
+            }
+        }
+
+        updateFivemPlayerCount();
+        setInterval(updateFivemPlayerCount, 30000); // 30 saniyede bir güncelle
 
         // DOM Elemanları
         const galleryGrid = document.getElementById('galleryGrid');
